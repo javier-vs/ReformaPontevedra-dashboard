@@ -3,272 +3,562 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reforma — Control de Gasto</title>
+<title>Reforma Pontevedra</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f8f7f4;
+  --bg: #f5f4f1;
   --surface: #ffffff;
-  --surface2: #f1efe8;
-  --border: rgba(0,0,0,0.1);
-  --border2: rgba(0,0,0,0.18);
+  --surface2: #eeece6;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
   --text: #1a1a18;
   --text2: #5f5e5a;
-  --text3: #888780;
+  --text3: #999894;
   --radius: 10px;
   --radius-lg: 14px;
+  --green: #0F6E56;
+  --red: #C0392B;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1a1a18;
-    --surface: #252523;
-    --surface2: #2c2c2a;
-    --border: rgba(255,255,255,0.1);
-    --border2: rgba(255,255,255,0.18);
-    --text: #f1efe8;
+    --bg: #181816;
+    --surface: #222220;
+    --surface2: #2a2a28;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0ede6;
     --text2: #b4b2a9;
-    --text3: #888780;
+    --text3: #666460;
   }
 }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.app { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-header { margin-bottom: 1.5rem; }
-header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
-header p { font-size: 13px; color: var(--text3); margin-top: 3px; }
+.app { max-width: 1060px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
+
+/* HEADER */
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
+.header-left h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+.header-left p { font-size: 12px; color: var(--text3); margin-top: 3px; }
+.upload-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: var(--radius); padding: 8px 16px;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+}
+.upload-btn:hover { opacity: 0.8; }
+.upload-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+#fileInput { display: none; }
+
+/* FILTERS */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
-.filters label { font-size: 13px; color: var(--text2); }
+.filters label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 .filters select {
   font-size: 13px; padding: 6px 10px; border-radius: var(--radius);
   border: 1px solid var(--border2); background: var(--surface);
   color: var(--text); cursor: pointer; outline: none;
 }
-.filters select:focus { border-color: #378ADD; }
+.filters select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.15); }
+
+/* METRICS */
 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
-.metric { background: var(--surface2); border-radius: var(--radius); padding: 0.875rem 1rem; }
-.metric .label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
-.metric .value { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
-.metric .sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
-.metric.positive .value { color: #0F6E56; }
-.charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.125rem 1.25rem; }
-.card-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
-.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); cursor: pointer; }
-.legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 8px 10px; border-bottom: 1px solid var(--border); }
-thead th:last-child { text-align: right; }
-tbody tr:hover { background: var(--surface2); border-radius: 6px; }
-tbody td { padding: 8px 8px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-tbody td:last-child { text-align: right; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.125rem; }
+.metric .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.metric .value { font-size: 24px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.metric .sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
+.metric.green .value { color: var(--green); }
+
+/* MAIN CHART CARD */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.card-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* BREAKDOWN TABLE */
+.breakdown-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.breakdown-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 10px 10px; border-bottom: 1px solid var(--border); }
+.breakdown-table thead th:last-child { text-align: right; }
+.breakdown-table .cat-row { cursor: pointer; transition: background 0.1s; }
+.breakdown-table .cat-row:hover { background: var(--surface2); }
+.breakdown-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+.breakdown-table .sub-row td { background: var(--surface2); font-size: 12px; color: var(--text2); border-bottom: 1px solid var(--border); }
+.breakdown-table .sub-row td:first-child { padding-left: 36px; color: var(--text3); }
+.breakdown-table .sub-row.last-sub td { border-bottom: 2px solid var(--border2); }
+.cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 8px; vertical-align: middle; flex-shrink: 0; }
+.expand-icon { display: inline-block; width: 14px; height: 14px; margin-right: 4px; color: var(--text3); font-style: normal; transition: transform 0.2s; vertical-align: middle; font-size: 11px; }
+.expand-icon.open { transform: rotate(90deg); }
 .bar-wrap { display: flex; align-items: center; gap: 8px; }
-.bar-bg { flex: 1; background: var(--surface2); border-radius: 3px; height: 5px; }
-.bar-fill { height: 5px; border-radius: 3px; }
-.badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 4px; }
-.tx-concept { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--text2); }
-.importe-neg { color: var(--text); font-weight: 500; }
-.importe-pos { color: #0F6E56; font-weight: 500; }
-.btn { background: var(--surface); border: 1px solid var(--border2); color: var(--text); font-size: 13px; padding: 7px 18px; border-radius: var(--radius); cursor: pointer; transition: background 0.15s; }
-.btn:hover { background: var(--surface2); }
-.more-wrap { text-align: center; margin-top: 12px; }
-.subcat-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.subcat-wrap .card-title { margin-bottom: 0; }
-@media (max-width: 700px) {
+.bar-bg { width: 100px; background: var(--surface2); border-radius: 3px; height: 4px; flex-shrink: 0; }
+.bar-fill { height: 4px; border-radius: 3px; }
+.amt { font-size: 13px; min-width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* TX TABLE */
+.tx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tx-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 10px 10px; border-bottom: 1px solid var(--border); }
+.tx-table thead th:last-child { text-align: right; }
+.tx-table tbody tr:hover { background: var(--surface2); }
+.tx-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.tx-concept { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); font-size: 12px; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.tx-pos { color: var(--green); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+.tx-neg { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* AUX CARD */
+.aux-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.aux-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+.aux-card .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.aux-card .value { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+.aux-card .note { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+.more-wrap { text-align: center; margin-top: 14px; }
+.btn-more { background: transparent; border: 1px solid var(--border2); color: var(--text2); font-size: 12px; padding: 7px 20px; border-radius: var(--radius); cursor: pointer; transition: background 0.15s; }
+.btn-more:hover { background: var(--surface2); }
+
+/* EMPTY STATE */
+.empty { text-align: center; padding: 4rem 2rem; color: var(--text3); }
+.empty p { margin-top: 8px; font-size: 14px; }
+
+.tx-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+
+@media (max-width: 680px) {
   .metrics { grid-template-columns: repeat(2,1fr); }
-  .charts-row { grid-template-columns: 1fr; }
-  .tx-concept { max-width: 160px; }
+  .aux-grid { grid-template-columns: 1fr; }
+  .bar-bg { width: 60px; }
+  .tx-concept { max-width: 140px; }
 }
 </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <h1>Reforma — Control de gasto</h1>
-    <p id="headerSub">Cargando datos...</p>
-  </header>
 
-  <div class="filters">
-    <label>Período:</label>
-    <select id="filterPeriod">
-      <option value="all">Todo</option>
-      <option value="2024">2024</option>
-      <option value="2025">2025</option>
-      <option value="2026">2026</option>
-    </select>
-    <label style="margin-left:6px">Categoría:</label>
-    <select id="filterCat"><option value="all">Todas</option></select>
-  </div>
-
-  <div class="metrics">
-    <div class="metric"><div class="label">Gasto bruto</div><div class="value" id="mTotal">—</div><div class="sub">sin subvenciones</div></div>
-    <div class="metric positive"><div class="label">Ingresos / devoluciones</div><div class="value" id="mSub">—</div><div class="sub">subvenciones + abonos</div></div>
-    <div class="metric"><div class="label">Gasto neto</div><div class="value" id="mNet">—</div><div class="sub">bruto menos ingresos</div></div>
-    <div class="metric"><div class="label">Transacciones</div><div class="value" id="mCount">—</div><div class="sub" id="mMonths">—</div></div>
-  </div>
-
-  <div class="charts-row">
-    <div class="card">
-      <div class="card-title">Gasto mensual</div>
-      <div style="position:relative;height:210px"><canvas id="chartLine"></canvas></div>
+  <div class="header">
+    <div class="header-left">
+      <h1>Reforma Pontevedra</h1>
+      <p id="headerSub">Carga tu Excel para visualizar los datos</p>
     </div>
-    <div class="card">
-      <div class="card-title">Por categoría</div>
-      <div style="position:relative;height:210px"><canvas id="chartDoughnut"></canvas></div>
-    </div>
+    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Actualizar datos
+    </button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
   </div>
 
-  <div class="card" style="margin-bottom:1rem">
-    <div class="card-title">Desglose por categoría</div>
-    <div class="legend" id="legendCat"></div>
-    <table>
-      <thead><tr><th>Categoría</th><th>Subcategorías</th><th>Ops.</th><th>Importe</th></tr></thead>
-      <tbody id="tableCat"></tbody>
-    </table>
-  </div>
+  <div id="mainContent" style="display:none">
 
-  <div class="card">
-    <div class="subcat-wrap">
-      <div class="card-title">Transacciones</div>
-      <select id="filterSubcat" style="font-size:12px;padding:5px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
-        <option value="all">Todas las subcategorías</option>
+    <div class="filters">
+      <label>Período</label>
+      <select id="filterPeriod">
+        <option value="all">Todo</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
       </select>
+      <label style="margin-left:6px">Categoría</label>
+      <select id="filterCat"><option value="all">Todas</option></select>
     </div>
-    <table>
-      <thead><tr><th>Fecha</th><th>Concepto</th><th>Subcategoría</th><th>Importe</th></tr></thead>
-      <tbody id="txBody"></tbody>
-    </table>
-    <div class="more-wrap"><button class="btn" id="btnMore" style="display:none">Ver más</button></div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="label">Gasto obra</div>
+        <div class="value" id="mTotal">—</div>
+        <div class="sub">sin combustible ni comida</div>
+      </div>
+      <div class="metric green">
+        <div class="label">Subvenciones y reembolsos</div>
+        <div class="value" id="mSub">—</div>
+        <div class="sub" id="mSubSub">—</div>
+      </div>
+      <div class="metric">
+        <div class="label">Gasto neto</div>
+        <div class="value" id="mNet">—</div>
+        <div class="sub">descontando ingresos</div>
+      </div>
+      <div class="metric">
+        <div class="label">Movimientos</div>
+        <div class="value" id="mCount">—</div>
+        <div class="sub" id="mMonths">—</div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Gasto por categoría</div>
+      </div>
+      <div style="position:relative" id="chartWrap">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+
+    <!-- BREAKDOWN -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Desglose por categoría</div>
+        <span style="font-size:11px;color:var(--text3)">Pulsa una fila para ver subcategorías</span>
+      </div>
+      <table class="breakdown-table">
+        <thead><tr><th>Categoría</th><th>Partidas</th><th>Ops.</th><th>Importe</th></tr></thead>
+        <tbody id="tableCat"></tbody>
+      </table>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="card">
+      <div class="tx-header">
+        <div class="card-title">Transacciones</div>
+        <select id="filterSubcat" style="font-size:12px;padding:5px 9px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
+          <option value="all">Todas las subcategorías</option>
+        </select>
+      </div>
+      <table class="tx-table">
+        <thead><tr><th>Fecha</th><th>Concepto</th><th>Subcategoría</th><th style="text-align:right">Importe</th></tr></thead>
+        <tbody id="txBody"></tbody>
+      </table>
+      <div class="more-wrap"><button class="btn-more" id="btnMore" style="display:none">Ver más transacciones</button></div>
+    </div>
+
+    <!-- AUX: combustible + comida -->
+    <div class="aux-grid">
+      <div class="aux-card">
+        <div class="label">Combustible obra</div>
+        <div class="value" id="auxCombustible">—</div>
+        <div class="note">No computa en el gasto de obra</div>
+      </div>
+      <div class="aux-card">
+        <div class="label">Comida obra</div>
+        <div class="value" id="auxComida">—</div>
+        <div class="note">No computa en el gasto de obra</div>
+      </div>
+    </div>
+
   </div>
+
+  <div id="emptyState" class="empty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;display:block;color:var(--text3)">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+    </svg>
+    <p>Pulsa <strong>Actualizar datos</strong> y selecciona tu Excel para comenzar</p>
+  </div>
+
 </div>
 
 <script>
-const DATA = [{"FECHA":"2024-07-15","CONCEPTO":"DEMOLICION PISO","IMPORTE":-2000.0,"CATEGORIA":"Demolición y Escombro","SUBCATEGORIA":"Demolición"},{"FECHA":"2024-07-15","CONCEPTO":"PERMISO DE OBRA","IMPORTE":-287.06,"CATEGORIA":"Profesionales y Tasas","SUBCATEGORIA":"Tasas Ayuntamiento"},{"FECHA":"2024-07-24","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-147.24,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-24","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-16.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-24","CONCEPTO":"CONSULTA ARQUITECTO PISO","IMPORTE":-40.0,"CATEGORIA":"Profesionales y Tasas","SUBCATEGORIA":"Arquitecto"},{"FECHA":"2024-07-24","CONCEPTO":"DISENO ESTUDIO PISO","IMPORTE":-1815.0,"CATEGORIA":"Profesionales y Tasas","SUBCATEGORIA":"Interiorista"},{"FECHA":"2024-07-25","CONCEPTO":"DIYESCA PONTEVEDRA - PRESUP N 855","IMPORTE":-310.39,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-07-26","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-9.24,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-26","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-35.52,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-26","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-25.48,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-29","CONCEPTO":"AMAZON","IMPORTE":-159.06,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-07-29","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-8.95,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-29","CONCEPTO":"ESCAYOLAS EL PUENTE","IMPORTE":-116.46,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-07-30","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-4.95,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-07-30","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-69.99,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-07-31","CONCEPTO":"AMAZON","IMPORTE":-162.49,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-07-31","CONCEPTO":"REGULARIZACION BRICOKING","IMPORTE":4.95,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2024-07-31","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-36.47,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-08-01","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-107.62,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-08-01","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-11.18,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-08-02","CONCEPTO":"AMAZON","IMPORTE":-131.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-08-07","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-151.3,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-08-07","CONCEPTO":"DISTRINEF","IMPORTE":-498.83,"CATEGORIA":"Ventilación Forzada","SUBCATEGORIA":"Conductos y Tomas"},{"FECHA":"2024-08-09","CONCEPTO":"PREFABRICADOS DENA","IMPORTE":-21.47,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-08-09","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-137.86,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Premarcos / Marcos Ventanas"},{"FECHA":"2024-08-10","CONCEPTO":"PLENOIL SANTIAGO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-08-10","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-191.83,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-08-10","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-140.29,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-08-17","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-44.05,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Premarcos / Marcos Ventanas"},{"FECHA":"2024-08-20","CONCEPTO":"BRICO DEPOT","IMPORTE":-318.0,"CATEGORIA":"Baños","SUBCATEGORIA":"Inodoros"},{"FECHA":"2024-08-20","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-22.44,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-08-20","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-228.41,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-08-21","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-249.21,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-08-22","CONCEPTO":"COMERCIAL ESGON","IMPORTE":-50.84,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-08-22","CONCEPTO":"COMERCIAL ESGON","IMPORTE":-13.03,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-08-22","CONCEPTO":"OGANDO DURAN","IMPORTE":-12.92,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-08-24","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-84.48,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-08-26","CONCEPTO":"LA FERRETERA","IMPORTE":-2.55,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-08-27","CONCEPTO":"Documentación subvención ING24-6357","IMPORTE":-121.0,"CATEGORIA":"Subvención E.E. y Reenbolsos","SUBCATEGORIA":"Documentación Subvención"},{"FECHA":"2024-08-27","CONCEPTO":"Documentación subvención ING24-6356","IMPORTE":-54.45,"CATEGORIA":"Subvención E.E. y Reenbolsos","SUBCATEGORIA":"Documentación Subvención"},{"FECHA":"2024-08-28","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-25.44,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Premarcos / Marcos Ventanas"},{"FECHA":"2024-08-30","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-13.75,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-08-30","CONCEPTO":"OBRAMAT SANTIAGO - Suelo Radiante","IMPORTE":-147.6,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Suelo Radiante"},{"FECHA":"2024-08-30","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-3.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-08-30","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":6.8,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2024-09-02","CONCEPTO":"OBRAMAT SANTIAGO - VENTANAS OR 2024/7822","IMPORTE":-2616.45,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Ventanas"},{"FECHA":"2024-09-04","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-2.2,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-09-05","CONCEPTO":"FERRETERIA ECHEGARAY","IMPORTE":-3.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-09-05","CONCEPTO":"ESCAYOLAS EL PUENTE","IMPORTE":-9.99,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-09-06","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-56.07,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Premarcos / Marcos Ventanas"},{"FECHA":"2024-09-09","CONCEPTO":"COMERCIAL ESGON","IMPORTE":-1.75,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-09-09","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-28.75,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-09-09","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-17.6,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-09-12","CONCEPTO":"Nicolás Vila - Suelo radiante","IMPORTE":-1980.0,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Losa Suelo Radiante"},{"FECHA":"2024-09-16","CONCEPTO":"UNLOCOYSUTECNOLOGIA","IMPORTE":-60.5,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-09-18","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-249.08,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-09-19","CONCEPTO":"JAVIER VAZQUEZ SANTOS - Losa suelo radiante","IMPORTE":-750.0,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Losa Suelo Radiante"},{"FECHA":"2024-09-19","CONCEPTO":"ROBERTO - Suelo radiante efectivo","IMPORTE":-1000.0,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Suelo Radiante"},{"FECHA":"2024-09-19","CONCEPTO":"DIYESCA - Pedido 128","IMPORTE":-494.59,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-09-23","CONCEPTO":"LAG MARTELO","IMPORTE":-28.93,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-09-23","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-151.81,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-09-23","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-20.8,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-09-23","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":79.85,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2024-09-24","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-40.84,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-09-26","CONCEPTO":"BARATOIL BARRO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-09-26","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-34.73,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-09-27","CONCEPTO":"AMAZON","IMPORTE":-19.49,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-10-04","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":0.4,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2024-10-04","CONCEPTO":"OBRAMAT SANTIAGO P&S","IMPORTE":-1815.98,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-10-07","CONCEPTO":"CEPSA RAXOIL","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-10-09","CONCEPTO":"CAMPANO SL","IMPORTE":-21.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-10-09","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-26.99,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-10","CONCEPTO":"AMAZON","IMPORTE":-177.99,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-10-15","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-29.09,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-15","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-63.11,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-10-15","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-20.42,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-10-17","CONCEPTO":"Combustible obra","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-10-17","CONCEPTO":"AMAZON","IMPORTE":-10.65,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-10-17","CONCEPTO":"LA FERRETERA","IMPORTE":-9.95,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-17","CONCEPTO":"Ferretería + cerrajero","IMPORTE":-15.85,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-18","CONCEPTO":"Aliexpress","IMPORTE":-32.28,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-10-21","CONCEPTO":"Tren Pontevedra-Santiago","IMPORTE":-6.85,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-10-21","CONCEPTO":"Tren Santiago","IMPORTE":-6.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-10-22","CONCEPTO":"Wallapop","IMPORTE":-15.18,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-10-22","CONCEPTO":"DISDEGA","IMPORTE":-22.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-22","CONCEPTO":"LA FERRETERA","IMPORTE":-5.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-22","CONCEPTO":"BRICOKING PONTEVEDRA - Aislamiento","IMPORTE":-76.95,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-10-24","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-10-24","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-35.49,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-10-28","CONCEPTO":"AREA SERVICIO A BARCA","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-10-28","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-16.15,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-10-29","CONCEPTO":"DISC BURGERS","IMPORTE":-6.9,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-10-30","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-43.89,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-30","CONCEPTO":"LA FERRETERA","IMPORTE":-7.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-30","CONCEPTO":"LA FERRETERA","IMPORTE":-6.45,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-10-31","CONCEPTO":"ABONO TARJETA","IMPORTE":19.49,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-10-31","CONCEPTO":"ABONO TARJETA","IMPORTE":37.94,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-10-31","CONCEPTO":"ABONO TARJETA","IMPORTE":126.53,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-11-04","CONCEPTO":"STAROIL AROUSA","IMPORTE":-27.99,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-04","CONCEPTO":"CABAHERMA","IMPORTE":-23.9,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-04","CONCEPTO":"AMAZON","IMPORTE":-54.9,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-11-04","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-22.47,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-04","CONCEPTO":"LA FERRETERA","IMPORTE":-13.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-07","CONCEPTO":"HEVAGO S.A.","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-07","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-15.0,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2024-11-07","CONCEPTO":"DISDEGA","IMPORTE":-16.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-07","CONCEPTO":"Javier Vázquez - Aluminios ventanas","IMPORTE":-190.0,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Aluminios Exteriores"},{"FECHA":"2024-11-12","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-8.98,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-13","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-13","CONCEPTO":"DISC BURGERS","IMPORTE":-6.9,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-11-13","CONCEPTO":"AMAZON - Iluminación LED","IMPORTE":-39.99,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2024-11-13","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-2.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-13","CONCEPTO":"ESCAYOLAS EL PUENTE","IMPORTE":-33.58,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-11-15","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-5.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-18","CONCEPTO":"CARREF PONTEVEDRA","IMPORTE":-41.94,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-18","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-18","CONCEPTO":"Glovo","IMPORTE":-10.95,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-11-18","CONCEPTO":"Aliexpress","IMPORTE":-7.16,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-11-18","CONCEPTO":"FEU VERT","IMPORTE":-14.01,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-18","CONCEPTO":"BRICOKING PONTEVEDRA - Aislamiento","IMPORTE":-25.84,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2024-11-18","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-14.3,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-11-19","CONCEPTO":"LONGLED LIGHTING - LED","IMPORTE":-84.08,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2024-11-19","CONCEPTO":"DISTRINEF","IMPORTE":-271.91,"CATEGORIA":"Ventilación Forzada","SUBCATEGORIA":"Conductos y Tomas"},{"FECHA":"2024-11-20","CONCEPTO":"REST. ATLANTICO","IMPORTE":-5.2,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-11-20","CONCEPTO":"CLIMAVENT","IMPORTE":-31.73,"CATEGORIA":"Ventilación Forzada","SUBCATEGORIA":"Conductos y Tomas"},{"FECHA":"2024-11-22","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-22","CONCEPTO":"BARCELONALED","IMPORTE":-34.45,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2024-11-22","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-28.1,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-25","CONCEPTO":"STAROIL AROUSA","IMPORTE":-21.1,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-25","CONCEPTO":"Glovo","IMPORTE":-11.05,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-11-25","CONCEPTO":"Glovo","IMPORTE":-10.5,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-11-25","CONCEPTO":"BARCELONALED","IMPORTE":-326.4,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2024-11-26","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-6.45,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-27","CONCEPTO":"Glovo","IMPORTE":-10.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-11-27","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-161.16,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-11-27","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-87.83,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-11-28","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-11-28","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-14.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-11-28","CONCEPTO":"FERRETERIA ECHEGARAY","IMPORTE":-2.18,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-04","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-12-04","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-7.14,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-09","CONCEPTO":"AMAZON","IMPORTE":-14.39,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-12-12","CONCEPTO":"OBRAMAT SANTIAGO P&S","IMPORTE":-1163.8,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-12-16","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-12-16","CONCEPTO":"DISC BURGERS","IMPORTE":-6.9,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-12-16","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-12.48,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-17","CONCEPTO":"HISEMAR VILABOA","IMPORTE":-39.42,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2024-12-19","CONCEPTO":"ESTACION SERVICIO EXNOR","IMPORTE":-31.7,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-12-19","CONCEPTO":"PANADERIA PASTELERIA","IMPORTE":-6.3,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-12-20","CONCEPTO":"DISC BURGERS","IMPORTE":-6.9,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2024-12-20","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-13.95,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2024-12-23","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-84.42,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2024-12-24","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-12-24","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-7.98,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-27","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-28.84,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-30","CONCEPTO":"LAG MARTELO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2024-12-30","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-33.88,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-30","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-1.82,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2024-12-30","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":9.7,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-01-03","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-03","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-155.62,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-01-07","CONCEPTO":"SANCHILAN","IMPORTE":-33.1,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-07","CONCEPTO":"MAMA SOFIA","IMPORTE":-10.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-07","CONCEPTO":"AMAZON","IMPORTE":-21.9,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-01-07","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-25.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-01-07","CONCEPTO":"LEROY MERLIN MOS","IMPORTE":-4.32,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-01-07","CONCEPTO":"Joel - Pasteado pladur","IMPORTE":-1800.0,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Pasteador"},{"FECHA":"2025-01-08","CONCEPTO":"DISC BURGERS","IMPORTE":-8.1,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-09","CONCEPTO":"LAG MARTELO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-09","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-16.09,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-01-09","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-66.99,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-01-09","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-18.34,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-01-13","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-13","CONCEPTO":"Glovo","IMPORTE":-10.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-13","CONCEPTO":"MTP MOSTOLES - Electricidad","IMPORTE":-66.48,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-01-13","CONCEPTO":"ESCAYOLAS DEL LEREZ SL","IMPORTE":-37.34,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-01-14","CONCEPTO":"Glovo","IMPORTE":-10.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-15","CONCEPTO":"DISC BURGERS","IMPORTE":-5.6,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-15","CONCEPTO":"COMERCIAL ESGON","IMPORTE":-39.42,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-01-17","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-17","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-33.95,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-01-20","CONCEPTO":"AMAZON - Grifería","IMPORTE":-125.98,"CATEGORIA":"Baños","SUBCATEGORIA":"Grifería"},{"FECHA":"2025-01-20","CONCEPTO":"PLANOPRINT","IMPORTE":-24.56,"CATEGORIA":"Profesionales y Tasas","SUBCATEGORIA":"Documentación"},{"FECHA":"2025-01-22","CONCEPTO":"DISC BURGERS","IMPORTE":-5.6,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-22","CONCEPTO":"HISEMAR VILABOA","IMPORTE":-24.19,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-01-23","CONCEPTO":"REDARSE","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-23","CONCEPTO":"OBRAMAT SANTIAGO - Electricidad","IMPORTE":-575.49,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-01-24","CONCEPTO":"ROBERTO - Suelo radiante efectivo","IMPORTE":-2000.0,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Suelo Radiante"},{"FECHA":"2025-01-27","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-17.4,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-01-28","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-28","CONCEPTO":"HISEMAR VILABOA","IMPORTE":-70.54,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-01-29","CONCEPTO":"Combustible","IMPORTE":-3.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-29","CONCEPTO":"DIA PONTEVEDRA","IMPORTE":-7.1,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-01-29","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-88.6,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-01-29","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-99.84,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-01-30","CONCEPTO":"AREA SERVICIO A BARCA","IMPORTE":-29.04,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-01-31","CONCEPTO":"DISC BURGERS","IMPORTE":-6.8,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-02-04","CONCEPTO":"CEPSA RAXOIL","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-02-04","CONCEPTO":"Contenedores Norte Sur - Contenedor escombro","IMPORTE":-231.0,"CATEGORIA":"Demolición y Escombro","SUBCATEGORIA":"Contenedor Escombro"},{"FECHA":"2025-02-05","CONCEPTO":"Pumar Cerámica - Bañera","IMPORTE":-286.4,"CATEGORIA":"Baños","SUBCATEGORIA":"Bañera"},{"FECHA":"2025-02-05","CONCEPTO":"DISC BURGERS","IMPORTE":-6.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-02-05","CONCEPTO":"POIO FERRETERIA","IMPORTE":-17.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-02-06","CONCEPTO":"DISC BURGERS","IMPORTE":-4.6,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-02-10","CONCEPTO":"SANXENXO II","IMPORTE":-24.05,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-02-11","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-38.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-02-12","CONCEPTO":"LICUID GROUP - LED","IMPORTE":-68.99,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-02-13","CONCEPTO":"POIO FERRETERIA","IMPORTE":-37.3,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-02-14","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-02-17","CONCEPTO":"Glovo","IMPORTE":-10.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-02-18","CONCEPTO":"DIYESCA - Placas yeso presupuesto 209","IMPORTE":-255.53,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-02-20","CONCEPTO":"CEPSA RAXOIL","IMPORTE":-32.2,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-02-20","CONCEPTO":"DIYESCA PONTEVEDRA","IMPORTE":-51.29,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-02-24","CONCEPTO":"CARBUGAL SANTIAGO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-02-24","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-39.41,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-02-24","CONCEPTO":"LA FERRETERA GALLEGA","IMPORTE":-48.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-02-24","CONCEPTO":"OBRAMAT SANTIAGO - Pintura","IMPORTE":-469.51,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-02-26","CONCEPTO":"PUMAR BAÑOS - Bañera","IMPORTE":-31.2,"CATEGORIA":"Baños","SUBCATEGORIA":"Bañera"},{"FECHA":"2025-02-26","CONCEPTO":"PONTE BELLA HOGAR","IMPORTE":-6.95,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-02-26","CONCEPTO":"Pintor - efectivo","IMPORTE":-480.0,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Pintor"},{"FECHA":"2025-03-03","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-03","CONCEPTO":"Tren Pontevedra-Santiago","IMPORTE":-7.2,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-03","CONCEPTO":"Tren Santiago","IMPORTE":-6.3,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-03","CONCEPTO":"AMAZON","IMPORTE":-46.99,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-03-04","CONCEPTO":"SOULBATH - Plato de ducha","IMPORTE":-279.0,"CATEGORIA":"Baños","SUBCATEGORIA":"Plato de ducha"},{"FECHA":"2025-03-04","CONCEPTO":"LEROY MERLIN MOS","IMPORTE":-6.78,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-03-05","CONCEPTO":"CAICOR COATINGS - Pintura","IMPORTE":-34.97,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-05","CONCEPTO":"Pintor - efectivo","IMPORTE":-240.0,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Pintor"},{"FECHA":"2025-03-06","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-14.44,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-06","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-7.22,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-06","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-3.11,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-07","CONCEPTO":"SANXENXO II","IMPORTE":-31.5,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-08","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-78.52,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-08","CONCEPTO":"Pintor - efectivo","IMPORTE":-160.0,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Pintor"},{"FECHA":"2025-03-10","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-76.4,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-10","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-7.22,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-12","CONCEPTO":"SBC SANXENXO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-12","CONCEPTO":"Pintor - efectivo","IMPORTE":-160.0,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Pintor"},{"FECHA":"2025-03-18","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-34.98,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-03-20","CONCEPTO":"OBRAMAT SANTIAGO - Impermeabilización","IMPORTE":-127.4,"CATEGORIA":"Baños","SUBCATEGORIA":"Impermeabilización"},{"FECHA":"2025-03-20","CONCEPTO":"PLENOIL SANTIAGO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-20","CONCEPTO":"DIA RETAIL PONTEVE","IMPORTE":-4.44,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-03-20","CONCEPTO":"OBRAMAT SANTIAGO - LED","IMPORTE":-149.4,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-03-20","CONCEPTO":"ESCAYOLAS DEL LEREZ","IMPORTE":-25.43,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-03-24","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-2.4,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-03-27","CONCEPTO":"STAROIL AROUSA","IMPORTE":-29.16,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-03-31","CONCEPTO":"Pumar Cerámica - Porcelánicos suelos y baños","IMPORTE":-6112.61,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Porcelánicos Suelos Y Baños"},{"FECHA":"2025-04-01","CONCEPTO":"LONGLED LIGHTING - LED","IMPORTE":-125.21,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-02","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-8.29,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-02","CONCEPTO":"DISPAINT O VAO","IMPORTE":-166.53,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-04-03","CONCEPTO":"DISPAINT O VAO","IMPORTE":-6.2,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-04-07","CONCEPTO":"BARATOIL BARRO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-04-08","CONCEPTO":"LAG OLEIROS","IMPORTE":-26.05,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-04-10","CONCEPTO":"LEDBOX","IMPORTE":-60.42,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-11","CONCEPTO":"COMERCIAL ESGON","IMPORTE":-11.2,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-04-11","CONCEPTO":"BARCELONA LED ILUMINAC","IMPORTE":-144.67,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-14","CONCEPTO":"EFECTOLED","IMPORTE":-62.5,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-14","CONCEPTO":"ABONO TARJETA","IMPORTE":27.98,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-14","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-5.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-14","CONCEPTO":"POIO FERRETERIA","IMPORTE":-37.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-15","CONCEPTO":"AMAZON","IMPORTE":-137.2,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-04-15","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-10.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-16","CONCEPTO":"PUMAR BAÑOS - Plato de ducha","IMPORTE":-48.0,"CATEGORIA":"Baños","SUBCATEGORIA":"Plato de ducha"},{"FECHA":"2025-04-16","CONCEPTO":"PLENOIL SANTIAGO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-04-16","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":97.15,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-04-16","CONCEPTO":"BARCELONA LED ILUMINAC","IMPORTE":-27.98,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-16","CONCEPTO":"DISPAINT O VAO","IMPORTE":-17.05,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-04-16","CONCEPTO":"OBRAMAT SANTIAGO - Adhesivos porcelánicos","IMPORTE":-408.42,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-04-17","CONCEPTO":"AMAZON - LED","IMPORTE":-81.33,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-18","CONCEPTO":"MADINA DONER KEBAB","IMPORTE":-8.5,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-04-21","CONCEPTO":"ABONO TARJETA","IMPORTE":24.99,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-22","CONCEPTO":"DIA PONTEVEDRA","IMPORTE":-13.96,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-04-22","CONCEPTO":"OGANDO DURAN","IMPORTE":-13.38,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-04-22","CONCEPTO":"HIPERMERCADO A BARCA","IMPORTE":-62.61,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-04-22","CONCEPTO":"PUMAR BAÑOS - Adhesivos","IMPORTE":-195.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-04-22","CONCEPTO":"Albañil - Lalo","IMPORTE":-360.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Albañil"},{"FECHA":"2025-04-23","CONCEPTO":"BARCELONA LED ILUMINAC","IMPORTE":-52.88,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-04-24","CONCEPTO":"CEPSA RAXOIL","IMPORTE":-31.3,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-04-24","CONCEPTO":"PUMAR BAÑOS - Adhesivos","IMPORTE":-149.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-04-25","CONCEPTO":"DISPAINT O VAO","IMPORTE":-6.16,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-04-25","CONCEPTO":"PREFABRICADOS DENA - Adhesivos","IMPORTE":-29.66,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-04-26","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-14.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-27","CONCEPTO":"Albañil - efectivo","IMPORTE":-540.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Albañil"},{"FECHA":"2025-04-28","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-17.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-28","CONCEPTO":"POIO FERRETERIA","IMPORTE":-8.6,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-04-29","CONCEPTO":"SBC SANXENXO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-04-29","CONCEPTO":"DIA PONTEVEDRA","IMPORTE":-6.7,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-04-30","CONCEPTO":"PUMAR BAÑOS - Adhesivos","IMPORTE":-123.19,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-05-02","CONCEPTO":"DIA PONTEVEDRA","IMPORTE":-3.24,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-05-02","CONCEPTO":"PUMAR BAÑOS - Adhesivos","IMPORTE":-30.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-05-03","CONCEPTO":"DISC BURGERS","IMPORTE":-6.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-05-05","CONCEPTO":"OBRAMAT SANTIAGO - Electricidad","IMPORTE":-98.69,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-05-05","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-16.05,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-05-05","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":11.57,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-05-06","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-05-06","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-4.38,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-05-06","CONCEPTO":"OGANDO DURAN - Adhesivos","IMPORTE":-198.19,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-05-07","CONCEPTO":"FULI PONTEVEDRA","IMPORTE":-14.5,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-05-08","CONCEPTO":"DIA PONTEVEDRA","IMPORTE":-7.19,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-05-08","CONCEPTO":"PUMAR BAÑOS - Adhesivos","IMPORTE":-152.41,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-05-09","CONCEPTO":"ABONO LED","IMPORTE":44.38,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-05-09","CONCEPTO":"Albañil - efectivo","IMPORTE":-360.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Albañil"},{"FECHA":"2025-05-10","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-05-12","CONCEPTO":"PUMAR BAÑOS - Inodoros","IMPORTE":-307.0,"CATEGORIA":"Baños","SUBCATEGORIA":"Inodoros"},{"FECHA":"2025-05-12","CONCEPTO":"HOSTELPAN","IMPORTE":-4.4,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-05-12","CONCEPTO":"Albañil - efectivo","IMPORTE":-180.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Albañil"},{"FECHA":"2025-05-14","CONCEPTO":"MADINA DONER KEBAB","IMPORTE":-17.0,"CATEGORIA":"Comida","SUBCATEGORIA":"Comida"},{"FECHA":"2025-05-14","CONCEPTO":"OPENAI *CHATGPT","IMPORTE":-46.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-05-19","CONCEPTO":"BARCELONA LED ILUMINAC","IMPORTE":-136.1,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-05-23","CONCEPTO":"Aliexpress - LED","IMPORTE":-40.25,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-05-27","CONCEPTO":"SERV.INTEGRALES ALJADEL - Mecanismos","IMPORTE":-407.25,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Mecanismos Eléctricos"},{"FECHA":"2025-05-29","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-05-31","CONCEPTO":"OBRAMAT SANTIAGO - Electricidad","IMPORTE":-201.34,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-06-02","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-06-02","CONCEPTO":"SERV.INTEGRALES ALJADEL - Mecanismos","IMPORTE":-257.92,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Mecanismos Eléctricos"},{"FECHA":"2025-06-04","CONCEPTO":"AMAZON - Domótica","IMPORTE":-43.8,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2025-06-06","CONCEPTO":"OBRAMAT SANTIAGO - Electricidad","IMPORTE":-50.23,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-06-09","CONCEPTO":"PAYPAL PALHERSUMIN - Mecanismos","IMPORTE":-162.08,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Mecanismos Eléctricos"},{"FECHA":"2025-06-14","CONCEPTO":"HAFESA MARISMAS","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-06-15","CONCEPTO":"MTP MOSTOLES - Mecanismos","IMPORTE":-35.33,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Mecanismos Eléctricos"},{"FECHA":"2025-06-16","CONCEPTO":"SHELLY SPAIN IBERIA - Domótica","IMPORTE":-327.75,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2025-06-23","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-06-27","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-07-03","CONCEPTO":"Aliexpress - LED","IMPORTE":-144.56,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-07-04","CONCEPTO":"ABONO TARJETA LED","IMPORTE":16.99,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-07-04","CONCEPTO":"DISPAINT GALICIA","IMPORTE":-77.95,"CATEGORIA":"Pintura y Acabado","SUBCATEGORIA":"Materiales Pintura"},{"FECHA":"2025-07-05","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-07-15","CONCEPTO":"PUMAR BAÑOS - Inodoros","IMPORTE":-290.0,"CATEGORIA":"Baños","SUBCATEGORIA":"Inodoros"},{"FECHA":"2025-07-16","CONCEPTO":"BARCELONA LED ILUMINAC","IMPORTE":-69.86,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2025-07-17","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-07-18","CONCEPTO":"ESCAYOLAS DEL LEREZ - Pladur","IMPORTE":-49.01,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-07-21","CONCEPTO":"CEPSA RAXOIL","IMPORTE":-33.95,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-07-21","CONCEPTO":"ESCAYOLAS DEL LEREZ","IMPORTE":-8.2,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-07-28","CONCEPTO":"PUMAR BAÑOS - Adhesivos porcelánicos","IMPORTE":-15.0,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-07-30","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-08-01","CONCEPTO":"AMAZON - Grifería","IMPORTE":-280.04,"CATEGORIA":"Baños","SUBCATEGORIA":"Grifería"},{"FECHA":"2025-08-01","CONCEPTO":"ESCAYOLAS DEL LEREZ SL","IMPORTE":-29.92,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-08-05","CONCEPTO":"AMAZON - Grifería","IMPORTE":-52.22,"CATEGORIA":"Baños","SUBCATEGORIA":"Grifería"},{"FECHA":"2025-08-07","CONCEPTO":"LAG MARTELO","IMPORTE":-29.71,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-08-07","CONCEPTO":"OBRAMAT SANTIAGO - Electricidad","IMPORTE":-302.38,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-08-07","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-70.24,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-08-13","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-08-21","CONCEPTO":"ESCAYOLAS DEL LEREZ - Pladur","IMPORTE":-18.14,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-08-26","CONCEPTO":"OPENAI *CHATGPT","IMPORTE":-23.0,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-08-27","CONCEPTO":"Caldera Viessmann financiada","IMPORTE":-1414.0,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Caldera Calefacción"},{"FECHA":"2025-08-28","CONCEPTO":"TUCALENTADORECONOMICO - Caldera","IMPORTE":-281.99,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-08-29","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-09-04","CONCEPTO":"PETROPRIX MEIS","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-09-05","CONCEPTO":"REGULARIZACION OBRAMAT - Electricidad","IMPORTE":31.75,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-09-05","CONCEPTO":"OBRAMAT SANTIAGO - Caldera","IMPORTE":-425.6,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-09-05","CONCEPTO":"REGULARIZACION OBRAMAT - Fontanería","IMPORTE":78.02,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-09-09","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-09-12","CONCEPTO":"BARATOIL BARRO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-09-12","CONCEPTO":"OBRAMAT SANTIAGO - Fontanería","IMPORTE":-403.43,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2025-09-15","CONCEPTO":"AMAZON - Caldera","IMPORTE":-71.08,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-09-16","CONCEPTO":"SUMINISTROS CALEFON","IMPORTE":-87.23,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-09-18","CONCEPTO":"Fontanero - efectivo","IMPORTE":-300.0,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Fontanero"},{"FECHA":"2025-09-18","CONCEPTO":"SUMINISTROS CALEFON","IMPORTE":-59.01,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-09-19","CONCEPTO":"OGANDO DURAN SL - Caldera","IMPORTE":-46.59,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-09-22","CONCEPTO":"POIO FERRETERIA","IMPORTE":-11.0,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2025-09-22","CONCEPTO":"OGANDO DURAN SL - Porcelánicos","IMPORTE":-33.6,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-09-24","CONCEPTO":"SBC SANXENXO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-09-24","CONCEPTO":"REGULARIZACION OBRAMAT - Caldera","IMPORTE":187.18,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-09-24","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-15.7,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-09-24","CONCEPTO":"OBRAMAT SANTIAGO - Porcelánicos","IMPORTE":-80.72,"CATEGORIA":"Porcelánicos","SUBCATEGORIA":"Adhesivos y Materiales"},{"FECHA":"2025-09-26","CONCEPTO":"ESCAYOLAS DEL LEREZ - Pladur","IMPORTE":-15.86,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2025-09-29","CONCEPTO":"OCIO SPORT AROUSA - Panel bañera","IMPORTE":-229.9,"CATEGORIA":"Baños","SUBCATEGORIA":"Bañera"},{"FECHA":"2025-09-29","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-10-06","CONCEPTO":"Bañera - efectivo","IMPORTE":-100.0,"CATEGORIA":"Baños","SUBCATEGORIA":"Bañera"},{"FECHA":"2025-10-08","CONCEPTO":"OGANDO DURAN","IMPORTE":-36.68,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-10-09","CONCEPTO":"CABAHERMA","IMPORTE":-16.2,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-10-09","CONCEPTO":"ELESTORE - Electricidad","IMPORTE":-59.99,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-10-09","CONCEPTO":"BRICOKING PONTEVEDRA","IMPORTE":-16.89,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Materiales Varios"},{"FECHA":"2025-10-10","CONCEPTO":"MTP MOSTOLES - Electricidad","IMPORTE":-58.74,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2025-10-13","CONCEPTO":"BARATOIL BARRO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-10-15","CONCEPTO":"Instalaciones Pon Gas","IMPORTE":-453.75,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Instalación Gas"},{"FECHA":"2025-10-15","CONCEPTO":"SUMINISTROS CALEFON - Caldera","IMPORTE":-51.41,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Caldera Calefacción"},{"FECHA":"2025-10-28","CONCEPTO":"Documentación subvención ING25-8748","IMPORTE":-50.26,"CATEGORIA":"Subvención E.E. y Reenbolsos","SUBCATEGORIA":"Documentación Subvención"},{"FECHA":"2025-10-28","CONCEPTO":"Documentación subvención ING25-9028","IMPORTE":-60.5,"CATEGORIA":"Subvención E.E. y Reenbolsos","SUBCATEGORIA":"Documentación Subvención"},{"FECHA":"2025-11-05","CONCEPTO":"SERV.INTEGRALES ALJADEL - Mecanismos","IMPORTE":-674.24,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Mecanismos Eléctricos"},{"FECHA":"2025-11-26","CONCEPTO":"SIHOGAR.COM - Electrodomésticos","IMPORTE":-541.45,"CATEGORIA":"Electrodomésticos","SUBCATEGORIA":"Electrodomésticos"},{"FECHA":"2025-11-26","CONCEPTO":"CASADELELECTRODOMESTICO","IMPORTE":-2449.0,"CATEGORIA":"Electrodomésticos","SUBCATEGORIA":"Electrodomésticos"},{"FECHA":"2025-11-27","CONCEPTO":"SBC SANXENXO","IMPORTE":-40.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-11-27","CONCEPTO":"MADERAS GRAN VIA - Primer pago carpintería","IMPORTE":-2300.0,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Carpintería Madera"},{"FECHA":"2025-11-28","CONCEPTO":"OBRAMAT SANTIAGO","IMPORTE":-147.33,"CATEGORIA":"Materiales Varios","SUBCATEGORIA":"Herramientas y Consumibles"},{"FECHA":"2025-12-01","CONCEPTO":"BSH ELECTRODOMESTICOS","IMPORTE":-27.5,"CATEGORIA":"Electrodomésticos","SUBCATEGORIA":"Electrodomésticos"},{"FECHA":"2025-12-03","CONCEPTO":"BSH ELECTRODOMESTICOS","IMPORTE":-1864.62,"CATEGORIA":"Electrodomésticos","SUBCATEGORIA":"Electrodomésticos"},{"FECHA":"2025-12-05","CONCEPTO":"Ferreteries Catalonia - Herrajes","IMPORTE":-776.05,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Herrajes: Bisagras y Cajones"},{"FECHA":"2025-12-09","CONCEPTO":"Herrajes El Metro - Hettich","IMPORTE":-708.65,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Herrajes: Bisagras y Cajones"},{"FECHA":"2025-12-09","CONCEPTO":"ABANCA - Tasas","IMPORTE":-114.99,"CATEGORIA":"Profesionales y Tasas","SUBCATEGORIA":"Tasas Ayuntamiento"},{"FECHA":"2025-12-11","CONCEPTO":"AMAZON - Domótica","IMPORTE":-24.8,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2025-12-15","CONCEPTO":"AMAZON - Grifería","IMPORTE":-331.4,"CATEGORIA":"Baños","SUBCATEGORIA":"Grifería"},{"FECHA":"2025-12-15","CONCEPTO":"MYDIC GALICIA - Domótica","IMPORTE":-7.5,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2025-12-16","CONCEPTO":"Wallapop - Domótica","IMPORTE":-143.38,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2025-12-16","CONCEPTO":"Subvención eficiencia energética","IMPORTE":3000.0,"CATEGORIA":"Subvención E.E. y Reenbolsos","SUBCATEGORIA":"Subvención Eficiencia Energética"},{"FECHA":"2025-12-17","CONCEPTO":"Espejos y mamparas - efectivo","IMPORTE":-205.89,"CATEGORIA":"Baños","SUBCATEGORIA":"Espejos y Mamparas"},{"FECHA":"2025-12-17","CONCEPTO":"SBC SANXENXO","IMPORTE":-30.0,"CATEGORIA":"Combustible","SUBCATEGORIA":"Combustible"},{"FECHA":"2025-12-17","CONCEPTO":"ABONO DOMÓTICA","IMPORTE":24.8,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2025-12-17","CONCEPTO":"Reembolso Bosch electrodomésticos","IMPORTE":800.0,"CATEGORIA":"Subvención E.E. y Reenbolsos","SUBCATEGORIA":"Reembolso Electrodomésticos BOSCH"},{"FECHA":"2025-12-17","CONCEPTO":"MADERAS GRAN VIA - Último pago carpintería","IMPORTE":-2016.86,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Carpintería Madera"},{"FECHA":"2025-12-18","CONCEPTO":"AMAZON - Grifería","IMPORTE":-194.81,"CATEGORIA":"Baños","SUBCATEGORIA":"Grifería"},{"FECHA":"2026-01-05","CONCEPTO":"EFECTOLED / BARCELONALED","IMPORTE":-119.08,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2026-01-07","CONCEPTO":"AMAZON - LED","IMPORTE":-32.76,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2026-01-09","CONCEPTO":"COMERCIAL ESGON - Fontanería","IMPORTE":-37.62,"CATEGORIA":"Fontanería y Calefacción","SUBCATEGORIA":"Materiales Fontanería"},{"FECHA":"2026-01-20","CONCEPTO":"OBRAMAT SANTIAGO - Electricidad","IMPORTE":-108.22,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2026-01-30","CONCEPTO":"MADERAS GRAN VIA - Pago enero carpintería","IMPORTE":-1500.0,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Carpintería Madera"},{"FECHA":"2026-02-09","CONCEPTO":"SHELLY SPAIN IBERIA - Domótica","IMPORTE":-137.19,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2026-02-11","CONCEPTO":"AMAZON - Domótica","IMPORTE":-8.99,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2026-02-11","CONCEPTO":"MADERAS GRAN VIA - Carpintería efectivo","IMPORTE":-1000.0,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Carpintería Madera"},{"FECHA":"2026-02-12","CONCEPTO":"OBRAMAT SANTIAGO - Pladur","IMPORTE":-176.73,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2026-02-12","CONCEPTO":"REGULARIZACION OBRAMAT","IMPORTE":40.11,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Pladur"},{"FECHA":"2026-02-12","CONCEPTO":"OBRAMAT SANTIAGO - Ventanas","IMPORTE":-102.48,"CATEGORIA":"Ventanas","SUBCATEGORIA":"Premarcos / Marcos Ventanas"},{"FECHA":"2026-02-13","CONCEPTO":"MADERAS GRAN VIA - Pago final carpintería","IMPORTE":-1615.3,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Carpintería Madera"},{"FECHA":"2026-02-20","CONCEPTO":"Ferreteries Catalonia - Herrajes","IMPORTE":-649.6,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Herrajes: Bisagras y Cajones"},{"FECHA":"2026-03-13","CONCEPTO":"Wallapop / Barcelona LED - Domótica/LED","IMPORTE":-68.39,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2026-03-18","CONCEPTO":"DOMADOO - Domótica","IMPORTE":-72.44,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"},{"FECHA":"2026-03-18","CONCEPTO":"SP BARCELONA LED","IMPORTE":-89.64,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2026-03-19","CONCEPTO":"GRANITOS VICTOR - Encimeras","IMPORTE":-800.0,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Encimeras"},{"FECHA":"2026-03-27","CONCEPTO":"Aliexpress - LED","IMPORTE":-101.85,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Iluminación LED"},{"FECHA":"2026-03-28","CONCEPTO":"POIO FERRETERIA - Electricidad","IMPORTE":-20.0,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Materiales Electricidad"},{"FECHA":"2026-03-30","CONCEPTO":"CLIMAVENT","IMPORTE":-13.72,"CATEGORIA":"Ventilación Forzada","SUBCATEGORIA":"Conductos y Tomas"},{"FECHA":"2026-03-31","CONCEPTO":"OBRAMAT SANTIAGO - Pladur/Aislamiento","IMPORTE":-29.4,"CATEGORIA":"Pladur y Aislamientos","SUBCATEGORIA":"Materiales Aislamiento"},{"FECHA":"2026-03-31","CONCEPTO":"OBRAMAT SANTIAGO - Equipamiento cocina","IMPORTE":-197.21,"CATEGORIA":"Mobiliario y Cocina","SUBCATEGORIA":"Equipamiento Varios"},{"FECHA":"2026-03-31","CONCEPTO":"REGULARIZACION + DEVOLUCION SHELLY","IMPORTE":165.0,"CATEGORIA":"Electricidad y Domótica","SUBCATEGORIA":"Domótica y Red"}];
+const AUX_CATS = ['Combustible', 'Comida'];
+const COLORS = {
+  'Mobiliario y Cocina':'#378ADD',
+  'Fontanería y Calefacción':'#1D9E75',
+  'Porcelánicos':'#D85A30',
+  'Pladur y Aislamientos':'#7F77DD',
+  'Electricidad y Domótica':'#EF9F27',
+  'Electrodomésticos':'#D4537E',
+  'Materiales Varios':'#888780',
+  'Baños':'#5DCAA5',
+  'Ventanas':'#AFA9EC',
+  'Combustible':'#B4B2A9',
+  'Profesionales y Tasas':'#0C447C',
+  'Demolición y Escombro':'#85B7EB',
+  'Pintura y Acabado':'#F0997B',
+  'Comida':'#C0DD97',
+  'Ventilación Forzada':'#FAC775',
+  'Subvención E.E. y Reenbolsos':'#0F6E56'
+};
 
-const COLORS = {'Mobiliario y Cocina':'#378ADD','Fontanería y Calefacción':'#1D9E75','Porcelánicos':'#D85A30','Pladur y Aislamientos':'#7F77DD','Electricidad y Domótica':'#EF9F27','Electrodomésticos':'#D4537E','Materiales Varios':'#888780','Baños':'#5DCAA5','Ventanas':'#AFA9EC','Combustible':'#B4B2A9','Profesionales y Tasas':'#0C447C','Demolición y Escombro':'#85B7EB','Pintura y Acabado':'#F0997B','Comida':'#C0DD97','Ventilación Forzada':'#FAC775','Subvención E.E. y Reenbolsos':'#0F6E56'};
-
-let lineChart, donut;
+let DATA = [];
+let barChart = null;
 let txPage = 0;
-const PG = 20;
+const PG = 25;
 
 const $ = id => document.getElementById(id);
 const fmt = v => Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';
 const fmtFull = v => (v<0?'-':'+') + Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';
 
-function filtered(){
+// FILE UPLOAD
+$('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      parseData(rows);
+    } catch(err) {
+      alert('Error al leer el archivo. Asegúrate de que es un Excel válido con las columnas FECHA, CONCEPTO, IMPORTE, CATEGORÍA, SUBCATEGORIA.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+});
+
+function parseData(rows) {
+  // Find header row
+  let headerIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const r = rows[i].map(c => String(c||'').toUpperCase().trim());
+    if (r.includes('FECHA') && r.includes('IMPORTE')) { headerIdx = i; break; }
+  }
+  if (headerIdx === -1) { alert('No se encontraron las columnas FECHA e IMPORTE en el archivo.'); return; }
+
+  const headers = rows[headerIdx].map(c => String(c||'').toUpperCase().trim());
+  const iF = headers.findIndex(h => h === 'FECHA');
+  const iC = headers.findIndex(h => h.includes('CONCEPTO'));
+  const iI = headers.findIndex(h => h === 'IMPORTE');
+  const iCat = headers.findIndex(h => h.includes('CATEGOR'));
+  const iSub = headers.findIndex(h => h.includes('SUBCATEGOR') || h.includes('SUBCATEGORÍA'));
+
+  DATA = [];
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || !r[iF] || r[iI] === undefined || r[iI] === null || r[iI] === '') continue;
+    const rawDate = r[iF];
+    let fecha = '';
+    if (typeof rawDate === 'number') {
+      // Excel serial date
+      const d = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+      fecha = d.toISOString().slice(0,10);
+    } else {
+      fecha = String(rawDate).slice(0,10);
+    }
+    const importe = parseFloat(String(r[iI]).replace(',','.'));
+    if (isNaN(importe)) continue;
+    DATA.push({
+      FECHA: fecha,
+      CONCEPTO: String(r[iC]||'').trim(),
+      IMPORTE: importe,
+      CATEGORIA: String(r[iCat]||'Sin categoría').trim(),
+      SUBCATEGORIA: String(r[iSub]||'').trim()
+    });
+  }
+
+  if (DATA.length === 0) { alert('No se encontraron datos válidos en el archivo.'); return; }
+
+  $('emptyState').style.display = 'none';
+  $('mainContent').style.display = 'block';
+  buildCatSelect();
+  update();
+}
+
+function filtered() {
   const yr = $('filterPeriod').value;
   const cat = $('filterCat').value;
-  return DATA.filter(d=>(yr==='all'||d.FECHA.startsWith(yr))&&(cat==='all'||d.CATEGORIA===cat));
+  return DATA.filter(d =>
+    (yr === 'all' || d.FECHA.startsWith(yr)) &&
+    (cat === 'all' || d.CATEGORIA === cat)
+  );
 }
 
-function initCatSelect(){
+function buildCatSelect() {
   const s = $('filterCat');
-  [...new Set(DATA.map(d=>d.CATEGORIA))].sort().forEach(c=>{
-    const o=document.createElement('option'); o.value=c; o.text=c; s.appendChild(o);
+  s.innerHTML = '<option value="all">Todas</option>';
+  [...new Set(DATA.map(d => d.CATEGORIA))].sort().forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.text = c; s.appendChild(o);
   });
 }
 
-function buildSubcatSelect(data){
-  const s=$('filterSubcat'), cur=s.value;
-  s.innerHTML='<option value="all">Todas las subcategorías</option>';
-  [...new Set(data.map(d=>d.SUBCATEGORIA))].sort().forEach(c=>{
-    const o=document.createElement('option'); o.value=c; o.text=c; if(c===cur) o.selected=true; s.appendChild(o);
+function buildSubcatSelect(data) {
+  const s = $('filterSubcat'), cur = s.value;
+  s.innerHTML = '<option value="all">Todas las subcategorías</option>';
+  [...new Set(data.map(d => d.SUBCATEGORIA).filter(Boolean))].sort().forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.text = c;
+    if (c === cur) o.selected = true;
+    s.appendChild(o);
   });
 }
 
-function metrics(data){
-  const gasto = data.filter(d=>d.IMPORTE<0).reduce((a,d)=>a+d.IMPORTE,0);
-  const ing = data.filter(d=>d.IMPORTE>0).reduce((a,d)=>a+d.IMPORTE,0);
+function metrics(data) {
+  const obraData = data.filter(d => !AUX_CATS.includes(d.CATEGORIA));
+  const gasto = obraData.filter(d => d.IMPORTE < 0 && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos').reduce((a,d) => a+d.IMPORTE, 0);
+  const subv = data.filter(d => d.IMPORTE > 0).reduce((a,d) => a+d.IMPORTE, 0);
+  const neto = gasto + subv;
+
   $('mTotal').textContent = fmt(gasto);
-  $('mSub').textContent = '+'+fmt(ing);
-  $('mNet').textContent = fmt(gasto+ing);
+  $('mSub').textContent = '+' + fmt(subv);
+  $('mNet').textContent = fmt(neto);
   $('mCount').textContent = data.length;
-  const ms = [...new Set(data.map(d=>d.FECHA.slice(0,7)))].length;
-  $('mMonths').textContent = ms+' meses de obra';
-  const first = data.reduce((a,d)=>d.FECHA<a?d.FECHA:a, data[0]?.FECHA||'');
-  const last  = data.reduce((a,d)=>d.FECHA>a?d.FECHA:a, data[0]?.FECHA||'');
-  $('headerSub').textContent = first && last ? first+' → '+last+' · '+data.length+' movimientos' : '';
+
+  const txSubv = data.filter(d => d.IMPORTE > 0).length;
+  $('mSubSub').textContent = txSubv + ' ingreso' + (txSubv !== 1 ? 's' : '');
+
+  const months = [...new Set(data.map(d => d.FECHA.slice(0,7)))].length;
+  $('mMonths').textContent = months + ' meses';
+
+  const first = data.reduce((a,d) => d.FECHA < a ? d.FECHA : a, data[0]?.FECHA||'');
+  const last  = data.reduce((a,d) => d.FECHA > a ? d.FECHA : a, data[0]?.FECHA||'');
+  $('headerSub').textContent = first && last
+    ? DATA.length + ' movimientos · ' + first.slice(0,7) + ' → ' + last.slice(0,7)
+    : '';
+
+  // Aux
+  const comb = data.filter(d => d.CATEGORIA === 'Combustible' && d.IMPORTE < 0).reduce((a,d) => a+d.IMPORTE, 0);
+  const comida = data.filter(d => d.CATEGORIA === 'Comida' && d.IMPORTE < 0).reduce((a,d) => a+d.IMPORTE, 0);
+  $('auxCombustible').textContent = fmt(comb);
+  $('auxComida').textContent = fmt(comida);
 }
 
-function lineChartRender(data){
-  const byM={};
-  data.forEach(d=>{ const m=d.FECHA.slice(0,7); byM[m]=(byM[m]||0)+d.IMPORTE; });
-  const labs=Object.keys(byM).sort();
-  const vals=labs.map(m=>Math.round(byM[m]));
-  if(lineChart) lineChart.destroy();
-  lineChart=new Chart($('chartLine'),{
-    type:'bar',
-    data:{labels:labs.map(l=>{const[y,m]=l.split('-');return m+'/'+y.slice(2);}),datasets:[{data:vals,backgroundColor:vals.map(v=>v<0?'#E24B4A':'#1D9E75'),borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.raw<0?'-':'+')+Math.abs(c.raw).toLocaleString('es-ES')+'€'}}},scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:14},grid:{display:false}},y:{ticks:{font:{size:10},callback:v=>Math.abs(v/1000).toFixed(1)+'k'},grid:{color:'rgba(128,128,128,0.12)'}}}}
+function renderBarChart(data) {
+  const byC = {};
+  data.filter(d => d.IMPORTE < 0 && !AUX_CATS.includes(d.CATEGORIA) && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos')
+    .forEach(d => { byC[d.CATEGORIA] = (byC[d.CATEGORIA]||0) + Math.abs(d.IMPORTE); });
+
+  const sorted = Object.entries(byC).sort((a,b) => b[1]-a[1]);
+  const labels = sorted.map(x => x[0]);
+  const values = sorted.map(x => Math.round(x[1]));
+  const colors = labels.map(l => COLORS[l]||'#888');
+
+  // Dynamic height
+  const h = Math.max(220, labels.length * 38 + 40);
+  $('chartWrap').style.height = h + 'px';
+
+  if (barChart) barChart.destroy();
+  barChart = new Chart($('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.raw.toLocaleString('es-ES') + '€'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { font:{size:11}, callback: v => (v/1000).toFixed(0)+'k€' },
+          grid: { color: 'rgba(128,128,128,0.1)' }
+        },
+        y: {
+          ticks: { font:{size:12} },
+          grid: { display: false }
+        }
+      }
+    }
   });
 }
 
-function donutRender(data){
-  const byC={};
-  data.filter(d=>d.IMPORTE<0).forEach(d=>{ byC[d.CATEGORIA]=(byC[d.CATEGORIA]||0)+Math.abs(d.IMPORTE); });
-  const sorted=Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,9);
-  if(donut) donut.destroy();
-  donut=new Chart($('chartDoughnut'),{
-    type:'doughnut',
-    data:{labels:sorted.map(x=>x[0]),datasets:[{data:sorted.map(x=>Math.round(x[1])),backgroundColor:sorted.map(x=>COLORS[x[0]]||'#888'),borderWidth:1,borderColor:'rgba(255,255,255,0.2)'}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.raw.toLocaleString('es-ES')+'€'}}}}
-  });
-}
+function renderTable(data) {
+  const byC = {};
+  data.filter(d => d.IMPORTE < 0 && !AUX_CATS.includes(d.CATEGORIA))
+    .forEach(d => {
+      if (!byC[d.CATEGORIA]) byC[d.CATEGORIA] = {t:0, n:0, subs:{}};
+      byC[d.CATEGORIA].t += d.IMPORTE;
+      byC[d.CATEGORIA].n++;
+      const s = d.SUBCATEGORIA||'Sin subcategoría';
+      if (!byC[d.CATEGORIA].subs[s]) byC[d.CATEGORIA].subs[s] = {t:0, n:0};
+      byC[d.CATEGORIA].subs[s].t += d.IMPORTE;
+      byC[d.CATEGORIA].subs[s].n++;
+    });
 
-function tableRender(data){
-  const byC={};
-  data.filter(d=>d.IMPORTE<0).forEach(d=>{
-    if(!byC[d.CATEGORIA]) byC[d.CATEGORIA]={t:0,n:0,s:new Set()};
-    byC[d.CATEGORIA].t+=d.IMPORTE; byC[d.CATEGORIA].n++; byC[d.CATEGORIA].s.add(d.SUBCATEGORIA);
-  });
-  const sorted=Object.entries(byC).sort((a,b)=>a[1].t-b[1].t);
-  const maxA=sorted.length?Math.abs(sorted[0][1].t):1;
-  const tb=$('tableCat'); tb.innerHTML='';
-  const lg=$('legendCat'); lg.innerHTML='';
-  sorted.forEach(([cat,info])=>{
-    const pct=(Math.abs(info.t)/maxA*100).toFixed(0);
-    const col=COLORS[cat]||'#888';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${col};margin-right:6px;vertical-align:middle"></span>${cat}</td><td style="color:var(--text3);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${[...info.s].join(', ')}</td><td style="color:var(--text3)">${info.n}</td><td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><span style="font-size:12px;min-width:66px;text-align:right">${fmt(info.t)}</span></div></td>`;
+  const sorted = Object.entries(byC).sort((a,b) => a[1].t - b[1].t);
+  const maxAbs = sorted.length ? Math.abs(sorted[0][1].t) : 1;
+  const tb = $('tableCat'); tb.innerHTML = '';
+
+  sorted.forEach(([cat, info]) => {
+    const pct = (Math.abs(info.t)/maxAbs*100).toFixed(0);
+    const col = COLORS[cat]||'#888';
+    const subsSorted = Object.entries(info.subs).sort((a,b) => a[1].t-b[1].t);
+    const subNames = subsSorted.map(s=>s[0]).join(', ');
+
+    // Category row
+    const tr = document.createElement('tr');
+    tr.className = 'cat-row';
+    tr.dataset.cat = cat;
+    tr.innerHTML = `
+      <td><i class="expand-icon" id="ei_${CSS.escape(cat)}">▶</i><span class="cat-dot" style="background:${col}"></span>${cat}</td>
+      <td style="color:var(--text3);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${subNames}">${subNames}</td>
+      <td style="color:var(--text3)">${info.n}</td>
+      <td>
+        <div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
+          <span class="amt">${fmt(info.t)}</span>
+        </div>
+      </td>`;
     tb.appendChild(tr);
-    const li=document.createElement('span'); li.className='legend-item';
-    li.innerHTML=`<span class="legend-dot" style="background:${col}"></span>${cat}`;
-    lg.appendChild(li);
+
+    // Subcategory rows (hidden by default)
+    subsSorted.forEach(([sub, sinfo], idx) => {
+      const str = document.createElement('tr');
+      str.className = 'sub-row' + (idx === subsSorted.length-1 ? ' last-sub' : '');
+      str.dataset.parent = cat;
+      str.style.display = 'none';
+      const subPct = (Math.abs(sinfo.t)/maxAbs*100).toFixed(0);
+      str.innerHTML = `
+        <td>${sub}</td>
+        <td style="color:var(--text3)">${sinfo.n} op.</td>
+        <td></td>
+        <td>
+          <div class="bar-wrap">
+            <div class="bar-bg"><div class="bar-fill" style="width:${subPct}%;background:${col}88"></div></div>
+            <span class="amt" style="color:var(--text2)">${fmt(sinfo.t)}</span>
+          </div>
+        </td>`;
+      tb.appendChild(str);
+    });
+
+    // Toggle click
+    tr.addEventListener('click', () => {
+      const icon = $(`ei_${CSS.escape(cat)}`);
+      const isOpen = icon.classList.contains('open');
+      icon.classList.toggle('open', !isOpen);
+      tb.querySelectorAll(`[data-parent="${cat}"]`).forEach(r => {
+        r.style.display = isOpen ? 'none' : '';
+      });
+    });
   });
 }
 
-function txRender(data, reset){
-  if(reset) txPage=0;
-  const sub=$('filterSubcat').value;
-  const src=(sub==='all'?data:data.filter(d=>d.SUBCATEGORIA===sub)).slice().sort((a,b)=>b.FECHA.localeCompare(a.FECHA));
-  const slice=src.slice(0,(txPage+1)*PG);
-  const tb=$('txBody'); tb.innerHTML='';
-  slice.forEach(d=>{
-    const col=COLORS[d.CATEGORIA]||'#888';
-    const neg=d.IMPORTE<0;
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="font-size:11px;color:var(--text3);white-space:nowrap">${d.FECHA.slice(8)}.${d.FECHA.slice(5,7)}.${d.FECHA.slice(0,4)}</td><td class="tx-concept" title="${d.CONCEPTO}">${d.CONCEPTO}</td><td><span class="badge" style="background:${col}22;color:${col}">${d.SUBCATEGORIA}</span></td><td class="${neg?'importe-neg':'importe-pos'}">${fmtFull(d.IMPORTE)}</td>`;
+function renderTx(data, reset) {
+  if (reset) txPage = 0;
+  const sub = $('filterSubcat').value;
+  const src = (sub === 'all' ? data : data.filter(d => d.SUBCATEGORIA === sub))
+    .slice().sort((a,b) => b.FECHA.localeCompare(a.FECHA));
+  const slice = src.slice(0, (txPage+1)*PG);
+  const tb = $('txBody'); tb.innerHTML = '';
+
+  slice.forEach(d => {
+    const col = COLORS[d.CATEGORIA]||'#888';
+    const neg = d.IMPORTE < 0;
+    const tr = document.createElement('tr');
+    const dd = d.FECHA;
+    const dateStr = dd.slice(8)+'.'+dd.slice(5,7)+'.'+dd.slice(0,4);
+    tr.innerHTML = `
+      <td style="font-size:11px;color:var(--text3);white-space:nowrap">${dateStr}</td>
+      <td class="tx-concept" title="${d.CONCEPTO}">${d.CONCEPTO}</td>
+      <td><span class="badge" style="background:${col}22;color:${col}">${d.SUBCATEGORIA||d.CATEGORIA}</span></td>
+      <td class="${neg?'tx-neg':'tx-pos'}">${fmtFull(d.IMPORTE)}</td>`;
     tb.appendChild(tr);
   });
-  $('btnMore').style.display=slice.length<src.length?'inline-block':'none';
+
+  $('btnMore').style.display = slice.length < src.length ? 'inline-block' : 'none';
 }
 
-function update(){
-  const data=filtered();
+function update() {
+  const data = filtered();
   buildSubcatSelect(data);
   metrics(data);
-  lineChartRender(data);
-  donutRender(data);
-  tableRender(data);
-  txRender(data,true);
+  renderBarChart(data);
+  renderTable(data);
+  renderTx(data, true);
 }
 
-initCatSelect();
-$('filterPeriod').addEventListener('change',update);
-$('filterCat').addEventListener('change',update);
-$('filterSubcat').addEventListener('change',()=>txRender(filtered(),true));
-$('btnMore').addEventListener('click',()=>{ txPage++; txRender(filtered(),false); });
-update();
+$('filterPeriod').addEventListener('change', update);
+$('filterCat').addEventListener('change', update);
+$('filterSubcat').addEventListener('change', () => renderTx(filtered(), true));
+$('btnMore').addEventListener('click', () => { txPage++; renderTx(filtered(), false); });
 </script>
 </body>
 </html>
