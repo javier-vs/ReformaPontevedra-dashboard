@@ -180,7 +180,7 @@ function renderPie(byC){
   if(pieChart)pieChart.destroy();
   pieChart=new Chart($('pieChart'),{
     type:'pie',
-    data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:BORDER_WIDTH,borderColor:'#ffffff',hoverOffset:HOVER_OFFSET}]},
+    data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:BORDER_WIDTH,borderColor:window.matchMedia('(prefers-color-scheme: dark)').matches?'#1e1b17':'#ffffff',hoverOffset:HOVER_OFFSET}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return ' '+ctx.label+': '+ctx.raw.toLocaleString('es-ES')+'€ ('+(ctx.raw/t*100).toFixed(1)+'%)';},labelColor:ctx=>({backgroundColor:colors[ctx.dataIndex],borderColor:'transparent',borderRadius:3})}}}}
   });
 }
