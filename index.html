@@ -340,9 +340,10 @@ async function loadData() {
 }
 
 function parseExcel(buffer) {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  // raw:true keeps numbers as numbers and dates as serial numbers
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: false });
   const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
 
   // Find header row (search first 10 rows)
   let hIdx = -1;
@@ -358,28 +359,38 @@ function parseExcel(buffer) {
   const iF   = col('FECHA');
   const iC   = col('CONCEPTO');
   const iI   = col('IMPORTE');
-  const iCat = col('CATEGOR');
-  const iSub = (() => {
-    // prefer SUBCATEGOR over CATEGOR
-    const idx = headers.findIndex(h => h.includes('SUBCATEGOR'));
-    return idx !== -1 ? idx : col('SUBCATEGOR');
-  })();
+  // SUBCATEGORIA must be found before CATEGORIA to avoid partial match conflict
+  const iSub = headers.findIndex(h => h.includes('SUBCATEGOR'));
+  const iCat = headers.findIndex(h => h.includes('CATEGOR') && !h.includes('SUBCATEGOR'));
+
+  // Convert Excel serial date to YYYY-MM-DD string
+  function serialToDate(serial) {
+    if (typeof serial === 'string' && serial.includes('-')) return serial.slice(0,10);
+    if (typeof serial === 'number') {
+      // Excel epoch: Dec 30 1899
+      const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth()+1).padStart(2,'0');
+      const day = String(d.getUTCDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+    return String(serial).slice(0,10);
+  }
 
   DATA = [];
   for (let i = hIdx + 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r[iF] === undefined || r[iF] === null || String(r[iF]).trim() === '') continue;
-    const raw = String(r[iF]).trim();
-    // Normalise date to YYYY-MM-DD
-    let fecha = raw.slice(0, 10);
-    const importe = parseFloat(String(r[iI] || '').replace(',', '.'));
+    const fecha = serialToDate(r[iF]);
+    // With raw:true numbers come as proper JS numbers — no string conversion needed
+    const importe = typeof r[iI] === 'number' ? r[iI] : parseFloat(String(r[iI]||'').replace(',','.'));
     if (isNaN(importe)) continue;
     DATA.push({
-      FECHA:       fecha,
-      CONCEPTO:    String(r[iC]  || '').trim(),
-      IMPORTE:     importe,
-      CATEGORIA:   String(r[iCat]|| 'Sin categoría').trim(),
-      SUBCATEGORIA:String(r[iSub]|| '').trim()
+      FECHA:        fecha,
+      CONCEPTO:     String(r[iC]  || '').trim(),
+      IMPORTE:      importe,
+      CATEGORIA:    String(r[iCat]|| 'Sin categoría').trim(),
+      SUBCATEGORIA: String(r[iSub]|| '').trim()
     });
   }
 
@@ -421,21 +432,23 @@ function buildSubcatSelect(data) {
 
 // ── METRICS ───────────────────────────────────────────────────────────────────
 function metrics(data) {
-  // Gasto obra = todo excepto AUX_CATS, sumando todo (positivos + negativos) por categoría
-  const obraData = data.filter(d => !AUX_CATS.includes(d.CATEGORIA));
-  const gastoObra = obraData.reduce((a, d) => a + d.IMPORTE, 0);
+  const AUX = AUX_CATS;
+  const SUBV_CAT = 'Subvención E.E. y Reenbolsos';
 
-  // Subvenciones = solo categoría Subvención, todos los movimientos
-  const subvData = data.filter(d => d.CATEGORIA === 'Subvención E.E. y Reenbolsos');
+  // Gasto bruto obra: solo negativos, excluye AUX y Subvención
+  const gastoBruto = data
+    .filter(d => !AUX.includes(d.CATEGORIA) && d.CATEGORIA !== SUBV_CAT && d.IMPORTE < 0)
+    .reduce((a, d) => a + d.IMPORTE, 0);
+
+  // Subvenciones y reembolsos: toda la categoría (suma neta, incluye gastos de tramitación)
+  const subvData = data.filter(d => d.CATEGORIA === SUBV_CAT);
   const totalSubv = subvData.reduce((a, d) => a + d.IMPORTE, 0);
 
-  // Gasto neto = gasto obra (ya incluye subvenciones dentro de obra si las hubiera)
-  // Pero subvenciones están en su propia categoría, así que el neto es simplemente
-  // la suma de toda la obra (que ya incluye subv como categoría positiva)
-  const neto = gastoObra;
+  // Gasto neto = bruto + subvenciones netas (subv es positivo así que resta del gasto)
+  const neto = gastoBruto + totalSubv;
 
-  $('mTotal').textContent = fmt(obraData.filter(d => d.IMPORTE < 0 && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos').reduce((a,d)=>a+d.IMPORTE,0));
-  $('mSub').textContent   = '+' + fmt(totalSubv);
+  $('mTotal').textContent = fmt(gastoBruto);
+  $('mSub').textContent   = (totalSubv >= 0 ? '+' : '') + fmt(totalSubv);
   $('mNet').textContent   = fmt(neto);
   $('mCount').textContent = data.length;
 
