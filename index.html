@@ -20,7 +20,6 @@
   --radius: 10px;
   --radius-lg: 14px;
   --green: #0F6E56;
-  --red: #C0392B;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -37,73 +36,76 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 .app { max-width: 1060px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
 
-/* HEADER */
 .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
 .header-left h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
 .header-left p { font-size: 12px; color: var(--text3); margin-top: 3px; }
-.upload-btn {
-  display: flex; align-items: center; gap: 7px;
-  background: var(--text); color: var(--bg);
-  border: none; border-radius: var(--radius); padding: 8px 16px;
-  font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+.reload-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  padding: 7px 14px; font-size: 12px; cursor: pointer;
+  transition: background 0.15s; white-space: nowrap;
 }
-.upload-btn:hover { opacity: 0.8; }
-.upload-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
-#fileInput { display: none; }
+.reload-btn:hover { background: var(--surface2); }
+.reload-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.reload-btn.loading svg { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* FILTERS */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
 .filters label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-.filters select {
-  font-size: 13px; padding: 6px 10px; border-radius: var(--radius);
-  border: 1px solid var(--border2); background: var(--surface);
-  color: var(--text); cursor: pointer; outline: none;
-}
-.filters select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.15); }
+.filters select { font-size: 13px; padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; outline: none; }
+.filters select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
 
-/* METRICS */
 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
 .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.125rem; }
 .metric .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.metric .value { font-size: 24px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.metric .value { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
 .metric .sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
 .metric.green .value { color: var(--green); }
 
-/* MAIN CHART CARD */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
 .card-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* BREAKDOWN TABLE */
-.breakdown-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.breakdown-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 10px 10px; border-bottom: 1px solid var(--border); }
-.breakdown-table thead th:last-child { text-align: right; }
-.breakdown-table .cat-row { cursor: pointer; transition: background 0.1s; }
-.breakdown-table .cat-row:hover { background: var(--surface2); }
-.breakdown-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-.breakdown-table .sub-row td { background: var(--surface2); font-size: 12px; color: var(--text2); border-bottom: 1px solid var(--border); }
-.breakdown-table .sub-row td:first-child { padding-left: 36px; color: var(--text3); }
-.breakdown-table .sub-row.last-sub td { border-bottom: 2px solid var(--border2); }
-.cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 8px; vertical-align: middle; flex-shrink: 0; }
-.expand-icon { display: inline-block; width: 14px; height: 14px; margin-right: 4px; color: var(--text3); font-style: normal; transition: transform 0.2s; vertical-align: middle; font-size: 11px; }
+.bd-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 0; }
+.bd-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.bd-table thead th:last-child { text-align: right; }
+.bd-table .cat-row { cursor: pointer; transition: background 0.1s; }
+.bd-table .cat-row:hover { background: var(--surface2); }
+.bd-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.bd-table .sub-row td { background: var(--surface2); font-size: 12px; color: var(--text2); }
+.bd-table .sub-row td:first-child { padding-left: 32px; color: var(--text3); }
+.bd-table .sub-row.last-sub td { border-bottom: 2px solid var(--border2); }
+.cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; vertical-align: middle; flex-shrink: 0; }
+.expand-icon { display: inline-block; font-style: normal; font-size: 10px; color: var(--text3); margin-right: 4px; transition: transform 0.2s; vertical-align: middle; }
 .expand-icon.open { transform: rotate(90deg); }
-.bar-wrap { display: flex; align-items: center; gap: 8px; }
-.bar-bg { width: 100px; background: var(--surface2); border-radius: 3px; height: 4px; flex-shrink: 0; }
+.bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.bar-bg { width: 80px; background: var(--surface2); border-radius: 3px; height: 4px; flex-shrink: 0; }
 .bar-fill { height: 4px; border-radius: 3px; }
-.amt { font-size: 13px; min-width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+.amt { font-size: 12px; min-width: 72px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.col-movs { color: var(--text3); text-align: center; }
+.col-subs { color: var(--text3); font-size: 11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* TX TABLE */
+.tx-toggle { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }
+.tx-toggle:hover { background: var(--surface2); }
+.tx-toggle-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.tx-toggle-icon { font-size: 11px; color: var(--text3); transition: transform 0.2s; }
+.tx-toggle-icon.open { transform: rotate(180deg); }
+.tx-inner { display: none; background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); padding: 0 1.25rem 1.25rem; margin-top: -1rem; margin-bottom: 1rem; }
+.tx-inner.open { display: block; }
+.tx-subheader { display: flex; justify-content: flex-end; padding: 1rem 0 0.75rem; }
 .tx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.tx-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 10px 10px; border-bottom: 1px solid var(--border); }
+.tx-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 8px 10px; border-bottom: 1px solid var(--border); }
 .tx-table thead th:last-child { text-align: right; }
 .tx-table tbody tr:hover { background: var(--surface2); }
-.tx-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
-.tx-concept { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); font-size: 12px; }
-.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
-.tx-pos { color: var(--green); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
-.tx-neg { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+.tx-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); }
+.tx-concept { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); font-size: 12px; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+.tx-pos { color: var(--green); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.tx-neg { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 
-/* AUX CARD */
 .aux-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
 .aux-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
 .aux-card .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
@@ -114,17 +116,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .btn-more { background: transparent; border: 1px solid var(--border2); color: var(--text2); font-size: 12px; padding: 7px 20px; border-radius: var(--radius); cursor: pointer; transition: background 0.15s; }
 .btn-more:hover { background: var(--surface2); }
 
-/* EMPTY STATE */
-.empty { text-align: center; padding: 4rem 2rem; color: var(--text3); }
-.empty p { margin-top: 8px; font-size: 14px; }
+.loading-state { text-align: center; padding: 4rem 2rem; color: var(--text3); font-size: 14px; }
+.error-state { text-align: center; padding: 3rem 2rem; color: #C0392B; font-size: 14px; }
+.error-state a { color: #C0392B; }
 
-.tx-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-
+/* RESPONSIVE */
 @media (max-width: 680px) {
   .metrics { grid-template-columns: repeat(2,1fr); }
   .aux-grid { grid-template-columns: 1fr; }
-  .bar-bg { width: 60px; }
-  .tx-concept { max-width: 140px; }
+  .bar-bg { width: 50px; }
+  .tx-concept { max-width: 120px; }
+  .col-subs { display: none; }
+  .bd-table thead th:nth-child(2) { display: none; }
+  .bd-table .cat-row td:nth-child(2) { display: none; }
+  .bd-table .sub-row td:nth-child(2) { display: none; }
 }
 </style>
 </head>
@@ -134,16 +139,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
   <div class="header">
     <div class="header-left">
       <h1>Reforma Pontevedra</h1>
-      <p id="headerSub">Carga tu Excel para visualizar los datos</p>
+      <p id="headerSub">Cargando datos…</p>
     </div>
-    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+    <button class="reload-btn" id="reloadBtn" onclick="loadData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
       </svg>
-      Actualizar datos
+      Actualizar
     </button>
-    <input type="file" id="fileInput" accept=".xlsx,.xls">
   </div>
+
+  <div id="loadingState" class="loading-state">Cargando datos…</div>
+  <div id="errorState" class="error-state" style="display:none"></div>
 
   <div id="mainContent" style="display:none">
 
@@ -182,7 +189,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
       </div>
     </div>
 
-    <!-- CHART -->
     <div class="card">
       <div class="card-header">
         <div class="card-title">Gasto por categoría</div>
@@ -192,22 +198,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
       </div>
     </div>
 
-    <!-- BREAKDOWN -->
     <div class="card">
       <div class="card-header">
         <div class="card-title">Desglose por categoría</div>
-        <span style="font-size:11px;color:var(--text3)">Pulsa una fila para ver subcategorías</span>
+        <span style="font-size:11px;color:var(--text3)">Pulsa para ver subcategorías</span>
       </div>
-      <table class="breakdown-table">
-        <thead><tr><th>Categoría</th><th>Partidas</th><th>Ops.</th><th>Importe</th></tr></thead>
+      <table class="bd-table">
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th class="col-subs">Subcategorías</th>
+            <th style="text-align:center">Movimientos</th>
+            <th style="text-align:right">Importe</th>
+          </tr>
+        </thead>
         <tbody id="tableCat"></tbody>
       </table>
     </div>
 
-    <!-- TRANSACTIONS -->
-    <div class="card">
-      <div class="tx-header">
-        <div class="card-title">Transacciones</div>
+    <!-- TX TOGGLE -->
+    <div class="tx-toggle" id="txToggle" onclick="toggleTx()">
+      <span class="tx-toggle-label">Últimas transacciones</span>
+      <span class="tx-toggle-icon" id="txIcon">▼</span>
+    </div>
+    <div class="tx-inner" id="txInner">
+      <div class="tx-subheader">
         <select id="filterSubcat" style="font-size:12px;padding:5px 9px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text)">
           <option value="all">Todas las subcategorías</option>
         </select>
@@ -219,7 +234,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
       <div class="more-wrap"><button class="btn-more" id="btnMore" style="display:none">Ver más transacciones</button></div>
     </div>
 
-    <!-- AUX: combustible + comida -->
     <div class="aux-grid">
       <div class="aux-card">
         <div class="label">Combustible obra</div>
@@ -234,35 +248,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
     </div>
 
   </div>
-
-  <div id="emptyState" class="empty">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;display:block;color:var(--text3)">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-    </svg>
-    <p>Pulsa <strong>Actualizar datos</strong> y selecciona tu Excel para comenzar</p>
-  </div>
-
 </div>
 
 <script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const GITHUB_USER = 'javier-vs';
+const GITHUB_REPO = 'ReformaPontevedra-dashboard';
+const EXCEL_FILE  = 'extracto_reforma.xlsx';
+const BRANCH      = 'main';
+// ─────────────────────────────────────────────────────────────────────────────
+
 const AUX_CATS = ['Combustible', 'Comida'];
 const COLORS = {
-  'Mobiliario y Cocina':'#378ADD',
-  'Fontanería y Calefacción':'#1D9E75',
-  'Porcelánicos':'#D85A30',
-  'Pladur y Aislamientos':'#7F77DD',
-  'Electricidad y Domótica':'#EF9F27',
-  'Electrodomésticos':'#D4537E',
-  'Materiales Varios':'#888780',
-  'Baños':'#5DCAA5',
-  'Ventanas':'#AFA9EC',
-  'Combustible':'#B4B2A9',
-  'Profesionales y Tasas':'#0C447C',
-  'Demolición y Escombro':'#85B7EB',
-  'Pintura y Acabado':'#F0997B',
-  'Comida':'#C0DD97',
-  'Ventilación Forzada':'#FAC775',
-  'Subvención E.E. y Reenbolsos':'#0F6E56'
+  'Mobiliario y Cocina':        '#378ADD',
+  'Fontanería y Calefacción':   '#1D9E75',
+  'Porcelánicos':               '#D85A30',
+  'Pladur y Aislamientos':      '#7F77DD',
+  'Electricidad y Domótica':    '#EF9F27',
+  'Electrodomésticos':          '#D4537E',
+  'Materiales Varios':          '#888780',
+  'Baños':                      '#5DCAA5',
+  'Ventanas':                   '#AFA9EC',
+  'Combustible':                '#B4B2A9',
+  'Profesionales y Tasas':      '#0C447C',
+  'Demolición y Escombro':      '#85B7EB',
+  'Pintura y Acabado':          '#F0997B',
+  'Comida':                     '#C0DD97',
+  'Ventilación Forzada':        '#FAC775',
+  'Subvención E.E. y Reenbolsos': '#0F6E56'
 };
 
 let DATA = [];
@@ -270,82 +283,120 @@ let barChart = null;
 let txPage = 0;
 const PG = 25;
 
-const $ = id => document.getElementById(id);
-const fmt = v => Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';
-const fmtFull = v => (v<0?'-':'+') + Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';
+const $  = id => document.getElementById(id);
+const fmt = v => Math.abs(v).toLocaleString('es-ES', {minimumFractionDigits:0, maximumFractionDigits:0}) + '€';
+const fmtFull = v => (v < 0 ? '-' : '+') + Math.abs(v).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€';
 
-// FILE UPLOAD
-$('fileInput').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
+// ── LOAD FROM GITHUB ──────────────────────────────────────────────────────────
+async function loadData() {
+  const btn = $('reloadBtn');
+  btn.classList.add('loading');
+  $('errorState').style.display = 'none';
+  $('loadingState').style.display = 'block';
+  $('mainContent').style.display = 'none';
+
+  // Use raw.githubusercontent.com for public repos; jsDelivr as fallback
+  const urls = [
+    `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${EXCEL_FILE}`,
+    `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${BRANCH}/${EXCEL_FILE}`
+  ];
+
+  let arrayBuffer = null;
+  let lastError = '';
+
+  for (const url of urls) {
     try {
-      const wb = XLSX.read(ev.target.result, {type:'array'});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-      parseData(rows);
-    } catch(err) {
-      alert('Error al leer el archivo. Asegúrate de que es un Excel válido con las columnas FECHA, CONCEPTO, IMPORTE, CATEGORÍA, SUBCATEGORIA.');
+      const res = await fetch(url);
+      if (!res.ok) { lastError = `HTTP ${res.status} desde ${url}`; continue; }
+      arrayBuffer = await res.arrayBuffer();
+      break;
+    } catch (e) {
+      lastError = e.message;
     }
-  };
-  reader.readAsArrayBuffer(file);
-  e.target.value = '';
-});
-
-function parseData(rows) {
-  // Find header row
-  let headerIdx = -1;
-  for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const r = rows[i].map(c => String(c||'').toUpperCase().trim());
-    if (r.includes('FECHA') && r.includes('IMPORTE')) { headerIdx = i; break; }
   }
-  if (headerIdx === -1) { alert('No se encontraron las columnas FECHA e IMPORTE en el archivo.'); return; }
 
-  const headers = rows[headerIdx].map(c => String(c||'').toUpperCase().trim());
-  const iF = headers.findIndex(h => h === 'FECHA');
-  const iC = headers.findIndex(h => h.includes('CONCEPTO'));
-  const iI = headers.findIndex(h => h === 'IMPORTE');
-  const iCat = headers.findIndex(h => h.includes('CATEGOR'));
-  const iSub = headers.findIndex(h => h.includes('SUBCATEGOR') || h.includes('SUBCATEGORÍA'));
+  btn.classList.remove('loading');
+
+  if (!arrayBuffer) {
+    $('loadingState').style.display = 'none';
+    $('errorState').style.display = 'block';
+    $('errorState').innerHTML = `
+      <strong>No se pudo cargar el archivo Excel.</strong><br><br>
+      ${lastError}<br><br>
+      Asegúrate de que el repositorio es público y que el archivo
+      <code>${EXCEL_FILE}</code> está en la rama <code>${BRANCH}</code>.<br><br>
+      <small>Si el repositorio es privado, necesitas hacer público el repo
+      o usar un token de acceso.</small>`;
+    return;
+  }
+
+  try {
+    parseExcel(arrayBuffer);
+  } catch (e) {
+    $('loadingState').style.display = 'none';
+    $('errorState').style.display = 'block';
+    $('errorState').textContent = 'Error al parsear el Excel: ' + e.message;
+  }
+}
+
+function parseExcel(buffer) {
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
+
+  // Find header row (search first 10 rows)
+  let hIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const r = rows[i].map(c => String(c || '').toUpperCase().trim());
+    if (r.some(c => c === 'FECHA') && r.some(c => c === 'IMPORTE')) { hIdx = i; break; }
+  }
+  if (hIdx === -1) throw new Error('No se encontraron columnas FECHA e IMPORTE.');
+
+  const headers = rows[hIdx].map(c => String(c || '').toUpperCase().trim());
+  const col = name => headers.findIndex(h => h.includes(name));
+
+  const iF   = col('FECHA');
+  const iC   = col('CONCEPTO');
+  const iI   = col('IMPORTE');
+  const iCat = col('CATEGOR');
+  const iSub = (() => {
+    // prefer SUBCATEGOR over CATEGOR
+    const idx = headers.findIndex(h => h.includes('SUBCATEGOR'));
+    return idx !== -1 ? idx : col('SUBCATEGOR');
+  })();
 
   DATA = [];
-  for (let i = headerIdx + 1; i < rows.length; i++) {
+  for (let i = hIdx + 1; i < rows.length; i++) {
     const r = rows[i];
-    if (!r || !r[iF] || r[iI] === undefined || r[iI] === null || r[iI] === '') continue;
-    const rawDate = r[iF];
-    let fecha = '';
-    if (typeof rawDate === 'number') {
-      // Excel serial date
-      const d = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
-      fecha = d.toISOString().slice(0,10);
-    } else {
-      fecha = String(rawDate).slice(0,10);
-    }
-    const importe = parseFloat(String(r[iI]).replace(',','.'));
+    if (!r || r[iF] === undefined || r[iF] === null || String(r[iF]).trim() === '') continue;
+    const raw = String(r[iF]).trim();
+    // Normalise date to YYYY-MM-DD
+    let fecha = raw.slice(0, 10);
+    const importe = parseFloat(String(r[iI] || '').replace(',', '.'));
     if (isNaN(importe)) continue;
     DATA.push({
-      FECHA: fecha,
-      CONCEPTO: String(r[iC]||'').trim(),
-      IMPORTE: importe,
-      CATEGORIA: String(r[iCat]||'Sin categoría').trim(),
-      SUBCATEGORIA: String(r[iSub]||'').trim()
+      FECHA:       fecha,
+      CONCEPTO:    String(r[iC]  || '').trim(),
+      IMPORTE:     importe,
+      CATEGORIA:   String(r[iCat]|| 'Sin categoría').trim(),
+      SUBCATEGORIA:String(r[iSub]|| '').trim()
     });
   }
 
-  if (DATA.length === 0) { alert('No se encontraron datos válidos en el archivo.'); return; }
+  if (DATA.length === 0) throw new Error('No se encontraron filas de datos válidas.');
 
-  $('emptyState').style.display = 'none';
+  $('loadingState').style.display = 'none';
   $('mainContent').style.display = 'block';
   buildCatSelect();
   update();
 }
 
+// ── FILTERS ───────────────────────────────────────────────────────────────────
 function filtered() {
-  const yr = $('filterPeriod').value;
+  const yr  = $('filterPeriod').value;
   const cat = $('filterCat').value;
   return DATA.filter(d =>
-    (yr === 'all' || d.FECHA.startsWith(yr)) &&
+    (yr  === 'all' || d.FECHA.startsWith(yr)) &&
     (cat === 'all' || d.CATEGORIA === cat)
   );
 }
@@ -368,48 +419,56 @@ function buildSubcatSelect(data) {
   });
 }
 
+// ── METRICS ───────────────────────────────────────────────────────────────────
 function metrics(data) {
+  // Gasto obra = todo excepto AUX_CATS, sumando todo (positivos + negativos) por categoría
   const obraData = data.filter(d => !AUX_CATS.includes(d.CATEGORIA));
-  const gasto = obraData.filter(d => d.IMPORTE < 0 && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos').reduce((a,d) => a+d.IMPORTE, 0);
-  const subv = data.filter(d => d.IMPORTE > 0).reduce((a,d) => a+d.IMPORTE, 0);
-  const neto = gasto + subv;
+  const gastoObra = obraData.reduce((a, d) => a + d.IMPORTE, 0);
 
-  $('mTotal').textContent = fmt(gasto);
-  $('mSub').textContent = '+' + fmt(subv);
-  $('mNet').textContent = fmt(neto);
+  // Subvenciones = solo categoría Subvención, todos los movimientos
+  const subvData = data.filter(d => d.CATEGORIA === 'Subvención E.E. y Reenbolsos');
+  const totalSubv = subvData.reduce((a, d) => a + d.IMPORTE, 0);
+
+  // Gasto neto = gasto obra (ya incluye subvenciones dentro de obra si las hubiera)
+  // Pero subvenciones están en su propia categoría, así que el neto es simplemente
+  // la suma de toda la obra (que ya incluye subv como categoría positiva)
+  const neto = gastoObra;
+
+  $('mTotal').textContent = fmt(obraData.filter(d => d.IMPORTE < 0 && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos').reduce((a,d)=>a+d.IMPORTE,0));
+  $('mSub').textContent   = '+' + fmt(totalSubv);
+  $('mNet').textContent   = fmt(neto);
   $('mCount').textContent = data.length;
 
-  const txSubv = data.filter(d => d.IMPORTE > 0).length;
-  $('mSubSub').textContent = txSubv + ' ingreso' + (txSubv !== 1 ? 's' : '');
+  $('mSubSub').textContent = subvData.length + ' movimiento' + (subvData.length !== 1 ? 's' : '');
 
-  const months = [...new Set(data.map(d => d.FECHA.slice(0,7)))].length;
+  const months = [...new Set(data.map(d => d.FECHA.slice(0, 7)))].length;
   $('mMonths').textContent = months + ' meses';
 
-  const first = data.reduce((a,d) => d.FECHA < a ? d.FECHA : a, data[0]?.FECHA||'');
-  const last  = data.reduce((a,d) => d.FECHA > a ? d.FECHA : a, data[0]?.FECHA||'');
-  $('headerSub').textContent = first && last
-    ? DATA.length + ' movimientos · ' + first.slice(0,7) + ' → ' + last.slice(0,7)
-    : '';
+  const sorted = data.map(d => d.FECHA).filter(Boolean).sort();
+  if (sorted.length) {
+    $('headerSub').textContent = DATA.length + ' movimientos · ' + sorted[0].slice(0,7) + ' → ' + sorted[sorted.length-1].slice(0,7);
+  }
 
   // Aux
-  const comb = data.filter(d => d.CATEGORIA === 'Combustible' && d.IMPORTE < 0).reduce((a,d) => a+d.IMPORTE, 0);
-  const comida = data.filter(d => d.CATEGORIA === 'Comida' && d.IMPORTE < 0).reduce((a,d) => a+d.IMPORTE, 0);
+  const comb  = data.filter(d => d.CATEGORIA === 'Combustible').reduce((a,d) => a+d.IMPORTE, 0);
+  const comida= data.filter(d => d.CATEGORIA === 'Comida').reduce((a,d) => a+d.IMPORTE, 0);
   $('auxCombustible').textContent = fmt(comb);
-  $('auxComida').textContent = fmt(comida);
+  $('auxComida').textContent      = fmt(comida);
 }
 
+// ── BAR CHART ─────────────────────────────────────────────────────────────────
 function renderBarChart(data) {
+  // Sum everything per category, exclude AUX and Subvención from the chart
   const byC = {};
-  data.filter(d => d.IMPORTE < 0 && !AUX_CATS.includes(d.CATEGORIA) && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos')
-    .forEach(d => { byC[d.CATEGORIA] = (byC[d.CATEGORIA]||0) + Math.abs(d.IMPORTE); });
+  data.filter(d => !AUX_CATS.includes(d.CATEGORIA) && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos')
+    .forEach(d => { byC[d.CATEGORIA] = (byC[d.CATEGORIA]||0) + d.IMPORTE; });
 
-  const sorted = Object.entries(byC).sort((a,b) => b[1]-a[1]);
+  const sorted = Object.entries(byC).sort((a,b) => a[1]-b[1]); // most negative first
   const labels = sorted.map(x => x[0]);
-  const values = sorted.map(x => Math.round(x[1]));
+  const values = sorted.map(x => Math.round(Math.abs(x[1])));
   const colors = labels.map(l => COLORS[l]||'#888');
 
-  // Dynamic height
-  const h = Math.max(220, labels.length * 38 + 40);
+  const h = Math.max(200, labels.length * 36 + 50);
   $('chartWrap').style.height = h + 'px';
 
   if (barChart) barChart.destroy();
@@ -417,12 +476,7 @@ function renderBarChart(data) {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderRadius: 4,
-        borderSkipped: false
-      }]
+      datasets: [{ data: values, backgroundColor: colors, borderRadius: 4, borderSkipped: false }]
     },
     options: {
       indexAxis: 'y',
@@ -430,88 +484,86 @@ function renderBarChart(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ' ' + ctx.raw.toLocaleString('es-ES') + '€'
-          }
-        }
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.raw.toLocaleString('es-ES') + '€' } }
       },
       scales: {
         x: {
           ticks: { font:{size:11}, callback: v => (v/1000).toFixed(0)+'k€' },
           grid: { color: 'rgba(128,128,128,0.1)' }
         },
-        y: {
-          ticks: { font:{size:12} },
-          grid: { display: false }
-        }
+        y: { ticks: { font:{size:12} }, grid: { display: false } }
       }
     }
   });
 }
 
+// ── BREAKDOWN TABLE ───────────────────────────────────────────────────────────
 function renderTable(data) {
+  // Sum everything (+ and -) per category/subcategory — no filtering
   const byC = {};
-  data.filter(d => d.IMPORTE < 0 && !AUX_CATS.includes(d.CATEGORIA))
-    .forEach(d => {
-      if (!byC[d.CATEGORIA]) byC[d.CATEGORIA] = {t:0, n:0, subs:{}};
-      byC[d.CATEGORIA].t += d.IMPORTE;
-      byC[d.CATEGORIA].n++;
-      const s = d.SUBCATEGORIA||'Sin subcategoría';
-      if (!byC[d.CATEGORIA].subs[s]) byC[d.CATEGORIA].subs[s] = {t:0, n:0};
-      byC[d.CATEGORIA].subs[s].t += d.IMPORTE;
-      byC[d.CATEGORIA].subs[s].n++;
-    });
+  data.filter(d => !AUX_CATS.includes(d.CATEGORIA)).forEach(d => {
+    if (!byC[d.CATEGORIA]) byC[d.CATEGORIA] = { t:0, n:0, subs:{} };
+    byC[d.CATEGORIA].t += d.IMPORTE;
+    byC[d.CATEGORIA].n++;
+    const s = d.SUBCATEGORIA || 'Sin subcategoría';
+    if (!byC[d.CATEGORIA].subs[s]) byC[d.CATEGORIA].subs[s] = { t:0, n:0 };
+    byC[d.CATEGORIA].subs[s].t += d.IMPORTE;
+    byC[d.CATEGORIA].subs[s].n++;
+  });
 
-  const sorted = Object.entries(byC).sort((a,b) => a[1].t - b[1].t);
-  const maxAbs = sorted.length ? Math.abs(sorted[0][1].t) : 1;
+  // Sort by absolute value descending (biggest categories first)
+  const sorted = Object.entries(byC).sort((a,b) => Math.abs(b[1].t) - Math.abs(a[1].t));
+  const maxAbs = sorted.length ? Math.max(...sorted.map(x => Math.abs(x[1].t))) : 1;
   const tb = $('tableCat'); tb.innerHTML = '';
 
   sorted.forEach(([cat, info]) => {
     const pct = (Math.abs(info.t)/maxAbs*100).toFixed(0);
     const col = COLORS[cat]||'#888';
-    const subsSorted = Object.entries(info.subs).sort((a,b) => a[1].t-b[1].t);
-    const subNames = subsSorted.map(s=>s[0]).join(', ');
+    const subsSorted = Object.entries(info.subs).sort((a,b) => a[1].t - b[1].t);
+    const subNames = subsSorted.map(s => s[0]).join(', ');
+    const isNeg = info.t < 0;
 
-    // Category row
     const tr = document.createElement('tr');
     tr.className = 'cat-row';
     tr.dataset.cat = cat;
     tr.innerHTML = `
-      <td><i class="expand-icon" id="ei_${CSS.escape(cat)}">▶</i><span class="cat-dot" style="background:${col}"></span>${cat}</td>
-      <td style="color:var(--text3);font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${subNames}">${subNames}</td>
-      <td style="color:var(--text3)">${info.n}</td>
+      <td style="white-space:nowrap">
+        <i class="expand-icon" id="ei_${btoa(cat).replace(/=/g,'')}">▶</i>
+        <span class="cat-dot" style="background:${col}"></span>${cat}
+      </td>
+      <td class="col-subs" title="${subNames}">${subNames}</td>
+      <td class="col-movs">${info.n}</td>
       <td>
         <div class="bar-wrap">
           <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
-          <span class="amt">${fmt(info.t)}</span>
+          <span class="amt" style="color:${isNeg?'var(--text)':'var(--green)'}">${isNeg?'':'+'}${fmt(info.t)}</span>
         </div>
       </td>`;
     tb.appendChild(tr);
 
-    // Subcategory rows (hidden by default)
     subsSorted.forEach(([sub, sinfo], idx) => {
       const str = document.createElement('tr');
       str.className = 'sub-row' + (idx === subsSorted.length-1 ? ' last-sub' : '');
       str.dataset.parent = cat;
       str.style.display = 'none';
       const subPct = (Math.abs(sinfo.t)/maxAbs*100).toFixed(0);
+      const sNeg = sinfo.t < 0;
       str.innerHTML = `
         <td>${sub}</td>
-        <td style="color:var(--text3)">${sinfo.n} op.</td>
-        <td></td>
+        <td class="col-subs" style="color:var(--text3)">${sinfo.n} mov.</td>
+        <td class="col-movs" style="color:var(--text3)"></td>
         <td>
           <div class="bar-wrap">
             <div class="bar-bg"><div class="bar-fill" style="width:${subPct}%;background:${col}88"></div></div>
-            <span class="amt" style="color:var(--text2)">${fmt(sinfo.t)}</span>
+            <span class="amt" style="color:${sNeg?'var(--text2)':'var(--green)'}">${sNeg?'':'+'}${fmt(sinfo.t)}</span>
           </div>
         </td>`;
       tb.appendChild(str);
     });
 
-    // Toggle click
     tr.addEventListener('click', () => {
-      const icon = $(`ei_${CSS.escape(cat)}`);
+      const key = btoa(cat).replace(/=/g,'');
+      const icon = $('ei_' + key);
       const isOpen = icon.classList.contains('open');
       icon.classList.toggle('open', !isOpen);
       tb.querySelectorAll(`[data-parent="${cat}"]`).forEach(r => {
@@ -519,6 +571,19 @@ function renderTable(data) {
       });
     });
   });
+}
+
+// ── TRANSACTIONS ──────────────────────────────────────────────────────────────
+function toggleTx() {
+  const inner = $('txInner');
+  const icon  = $('txIcon');
+  const isOpen = inner.classList.contains('open');
+  inner.classList.toggle('open', !isOpen);
+  icon.classList.toggle('open', !isOpen);
+  // Round corners on toggle header
+  $('txToggle').style.borderRadius = isOpen
+    ? 'var(--radius-lg)'
+    : 'var(--radius-lg) var(--radius-lg) 0 0';
 }
 
 function renderTx(data, reset) {
@@ -532,9 +597,11 @@ function renderTx(data, reset) {
   slice.forEach(d => {
     const col = COLORS[d.CATEGORIA]||'#888';
     const neg = d.IMPORTE < 0;
+    const dd  = d.FECHA;
+    const dateStr = dd.length >= 10
+      ? dd.slice(8)+'.'+dd.slice(5,7)+'.'+dd.slice(0,4)
+      : dd;
     const tr = document.createElement('tr');
-    const dd = d.FECHA;
-    const dateStr = dd.slice(8)+'.'+dd.slice(5,7)+'.'+dd.slice(0,4);
     tr.innerHTML = `
       <td style="font-size:11px;color:var(--text3);white-space:nowrap">${dateStr}</td>
       <td class="tx-concept" title="${d.CONCEPTO}">${d.CONCEPTO}</td>
@@ -546,6 +613,7 @@ function renderTx(data, reset) {
   $('btnMore').style.display = slice.length < src.length ? 'inline-block' : 'none';
 }
 
+// ── UPDATE ────────────────────────────────────────────────────────────────────
 function update() {
   const data = filtered();
   buildSubcatSelect(data);
@@ -555,10 +623,14 @@ function update() {
   renderTx(data, true);
 }
 
+// ── EVENTS ────────────────────────────────────────────────────────────────────
 $('filterPeriod').addEventListener('change', update);
 $('filterCat').addEventListener('change', update);
 $('filterSubcat').addEventListener('change', () => renderTx(filtered(), true));
 $('btnMore').addEventListener('click', () => { txPage++; renderTx(filtered(), false); });
+
+// Auto-load on start
+loadData();
 </script>
 </body>
 </html>
