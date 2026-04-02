@@ -9,66 +9,42 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f5f4f1;
-  --surface: #ffffff;
-  --surface2: #eeece6;
-  --border: rgba(0,0,0,0.08);
-  --border2: rgba(0,0,0,0.15);
-  --text: #1a1a18;
-  --text2: #5f5e5a;
-  --text3: #999894;
-  --radius: 10px;
-  --radius-lg: 14px;
-  --green: #0F6E56;
+  --bg: #f5f4f1; --surface: #ffffff; --surface2: #eeece6;
+  --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.15);
+  --text: #1a1a18; --text2: #5f5e5a; --text3: #999894;
+  --radius: 10px; --radius-lg: 14px; --green: #0F6E56;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #181816;
-    --surface: #222220;
-    --surface2: #2a2a28;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.15);
-    --text: #f0ede6;
-    --text2: #b4b2a9;
-    --text3: #666460;
+    --bg: #181816; --surface: #222220; --surface2: #2a2a28;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+    --text: #f0ede6; --text2: #b4b2a9; --text3: #666460;
   }
 }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 .app { max-width: 1060px; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
-
-.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
-.header-left h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
-.header-left p { font-size: 12px; color: var(--text3); margin-top: 3px; }
-.reload-btn {
-  display: flex; align-items: center; gap: 6px;
-  background: transparent; color: var(--text2);
-  border: 1px solid var(--border2); border-radius: var(--radius);
-  padding: 7px 14px; font-size: 12px; cursor: pointer;
-  transition: background 0.15s; white-space: nowrap;
-}
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+.reload-btn { display: flex; align-items: center; gap: 6px; background: transparent; color: var(--text2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 7px 14px; font-size: 12px; cursor: pointer; transition: background 0.15s; white-space: nowrap; flex-shrink: 0; }
 .reload-btn:hover { background: var(--surface2); }
 .reload-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 .reload-btn.loading svg { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
 .filters label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 .filters select { font-size: 13px; padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; outline: none; }
 .filters select:focus { border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
-
-.metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
 .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.125rem; }
 .metric .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.metric .value { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.metric .value { font-size: 24px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
 .metric .sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
 .metric.green .value { color: var(--green); }
-
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
 .card-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
-
-/* BREAKDOWN TABLE */
-.bd-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 0; }
+.bd-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.bd-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 380px; }
 .bd-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .bd-table thead th:last-child { text-align: right; }
 .bd-table .cat-row { cursor: pointer; transition: background 0.1s; }
@@ -83,11 +59,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
 .bar-bg { width: 80px; background: var(--surface2); border-radius: 3px; height: 4px; flex-shrink: 0; }
 .bar-fill { height: 4px; border-radius: 3px; }
-.amt { font-size: 12px; min-width: 72px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.col-movs { color: var(--text3); text-align: center; }
-.col-subs { color: var(--text3); font-size: 11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* TX TABLE */
+.amt { font-size: 12px; min-width: 80px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.col-subs { color: var(--text3); font-size: 11px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tx-toggle { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }
 .tx-toggle:hover { background: var(--surface2); }
 .tx-toggle-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -96,40 +69,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .tx-inner { display: none; background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); padding: 0 1.25rem 1.25rem; margin-top: -1rem; margin-bottom: 1rem; }
 .tx-inner.open { display: block; }
 .tx-subheader { display: flex; justify-content: flex-end; padding: 1rem 0 0.75rem; }
-.tx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tx-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tx-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 400px; }
 .tx-table thead th { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 0 8px 10px; border-bottom: 1px solid var(--border); }
 .tx-table thead th:last-child { text-align: right; }
 .tx-table tbody tr:hover { background: var(--surface2); }
 .tx-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); }
-.tx-concept { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); font-size: 12px; }
+.tx-concept { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); font-size: 12px; }
 .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
 .tx-pos { color: var(--green); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .tx-neg { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-
 .aux-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
 .aux-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
 .aux-card .label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
 .aux-card .value { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
 .aux-card .note { font-size: 11px; color: var(--text3); margin-top: 4px; }
-
 .more-wrap { text-align: center; margin-top: 14px; }
 .btn-more { background: transparent; border: 1px solid var(--border2); color: var(--text2); font-size: 12px; padding: 7px 20px; border-radius: var(--radius); cursor: pointer; transition: background 0.15s; }
 .btn-more:hover { background: var(--surface2); }
-
 .loading-state { text-align: center; padding: 4rem 2rem; color: var(--text3); font-size: 14px; }
-.error-state { text-align: center; padding: 3rem 2rem; color: #C0392B; font-size: 14px; }
-.error-state a { color: #C0392B; }
-
-/* RESPONSIVE */
+.error-state { text-align: center; padding: 3rem 2rem; color: #C0392B; font-size: 14px; line-height: 1.6; }
 @media (max-width: 680px) {
-  .metrics { grid-template-columns: repeat(2,1fr); }
+  .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .aux-grid { grid-template-columns: 1fr; }
-  .bar-bg { width: 50px; }
-  .tx-concept { max-width: 120px; }
-  .col-subs { display: none; }
-  .bd-table thead th:nth-child(2) { display: none; }
-  .bd-table .cat-row td:nth-child(2) { display: none; }
-  .bd-table .sub-row td:nth-child(2) { display: none; }
+  .tx-concept { max-width: 140px; }
 }
 </style>
 </head>
@@ -137,10 +100,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 <div class="app">
 
   <div class="header">
-    <div class="header-left">
-      <h1>Reforma Pontevedra</h1>
-      <p id="headerSub">Cargando datos…</p>
-    </div>
+    <h1>Reforma Pontevedra</h1>
     <button class="reload-btn" id="reloadBtn" onclick="loadData()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -168,24 +128,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 
     <div class="metrics">
       <div class="metric">
-        <div class="label">Gasto obra</div>
+        <div class="label">Gasto bruto</div>
         <div class="value" id="mTotal">—</div>
-        <div class="sub">sin combustible ni comida</div>
+        <div class="sub">sin subvenciones</div>
       </div>
       <div class="metric green">
         <div class="label">Subvenciones y reembolsos</div>
         <div class="value" id="mSub">—</div>
-        <div class="sub" id="mSubSub">—</div>
+        <div class="sub">&nbsp;</div>
       </div>
       <div class="metric">
         <div class="label">Gasto neto</div>
         <div class="value" id="mNet">—</div>
-        <div class="sub">descontando ingresos</div>
-      </div>
-      <div class="metric">
-        <div class="label">Movimientos</div>
-        <div class="value" id="mCount">—</div>
-        <div class="sub" id="mMonths">—</div>
+        <div class="sub">descontando subvenciones</div>
       </div>
     </div>
 
@@ -203,22 +158,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
         <div class="card-title">Desglose por categoría</div>
         <span style="font-size:11px;color:var(--text3)">Pulsa para ver subcategorías</span>
       </div>
-      <table class="bd-table">
-        <thead>
-          <tr>
+      <div class="bd-wrap">
+        <table class="bd-table">
+          <thead><tr>
             <th>Categoría</th>
             <th class="col-subs">Subcategorías</th>
-            <th style="text-align:center">Movimientos</th>
             <th style="text-align:right">Importe</th>
-          </tr>
-        </thead>
-        <tbody id="tableCat"></tbody>
-      </table>
+          </tr></thead>
+          <tbody id="tableCat"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- TX TOGGLE -->
     <div class="tx-toggle" id="txToggle" onclick="toggleTx()">
-      <span class="tx-toggle-label">Últimas transacciones</span>
+      <span class="tx-toggle-label">Últimos movimientos</span>
       <span class="tx-toggle-icon" id="txIcon">▼</span>
     </div>
     <div class="tx-inner" id="txInner">
@@ -227,11 +180,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
           <option value="all">Todas las subcategorías</option>
         </select>
       </div>
-      <table class="tx-table">
-        <thead><tr><th>Fecha</th><th>Concepto</th><th>Subcategoría</th><th style="text-align:right">Importe</th></tr></thead>
-        <tbody id="txBody"></tbody>
-      </table>
-      <div class="more-wrap"><button class="btn-more" id="btnMore" style="display:none">Ver más transacciones</button></div>
+      <div class="tx-wrap">
+        <table class="tx-table">
+          <thead><tr><th>Fecha</th><th>Concepto</th><th>Subcategoría</th><th style="text-align:right">Importe</th></tr></thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
+      <div class="more-wrap"><button class="btn-more" id="btnMore" style="display:none">Ver más</button></div>
     </div>
 
     <div class="aux-grid">
@@ -251,43 +206,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
 const GITHUB_USER = 'javier-vs';
 const GITHUB_REPO = 'ReformaPontevedra-dashboard';
 const EXCEL_FILE  = 'extracto_reforma.xlsx';
 const BRANCH      = 'main';
-// ─────────────────────────────────────────────────────────────────────────────
 
 const AUX_CATS = ['Combustible', 'Comida'];
+const SUBV_CAT = 'Subvención E.E. y Reenbolsos';
 const COLORS = {
-  'Mobiliario y Cocina':        '#378ADD',
-  'Fontanería y Calefacción':   '#1D9E75',
-  'Porcelánicos':               '#D85A30',
-  'Pladur y Aislamientos':      '#7F77DD',
-  'Electricidad y Domótica':    '#EF9F27',
-  'Electrodomésticos':          '#D4537E',
-  'Materiales Varios':          '#888780',
-  'Baños':                      '#5DCAA5',
-  'Ventanas':                   '#AFA9EC',
-  'Combustible':                '#B4B2A9',
-  'Profesionales y Tasas':      '#0C447C',
-  'Demolición y Escombro':      '#85B7EB',
-  'Pintura y Acabado':          '#F0997B',
-  'Comida':                     '#C0DD97',
-  'Ventilación Forzada':        '#FAC775',
-  'Subvención E.E. y Reenbolsos': '#0F6E56'
+  'Mobiliario y Cocina':'#378ADD','Fontanería y Calefacción':'#1D9E75',
+  'Porcelánicos':'#D85A30','Pladur y Aislamientos':'#7F77DD',
+  'Electricidad y Domótica':'#EF9F27','Electrodomésticos':'#D4537E',
+  'Materiales Varios':'#888780','Baños':'#5DCAA5','Ventanas':'#AFA9EC',
+  'Combustible':'#B4B2A9','Profesionales y Tasas':'#0C447C',
+  'Demolición y Escombro':'#85B7EB','Pintura y Acabado':'#F0997B',
+  'Comida':'#C0DD97','Ventilación Forzada':'#FAC775',
+  'Subvención E.E. y Reenbolsos':'#0F6E56'
 };
 
-let DATA = [];
-let barChart = null;
-let txPage = 0;
+let DATA = [], barChart = null, txPage = 0;
 const PG = 25;
+const $   = id => document.getElementById(id);
+const fmt = v  => Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';
+const fmtFull = v => (v<0?'-':'+')+Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';
 
-const $  = id => document.getElementById(id);
-const fmt = v => Math.abs(v).toLocaleString('es-ES', {minimumFractionDigits:0, maximumFractionDigits:0}) + '€';
-const fmtFull = v => (v < 0 ? '-' : '+') + Math.abs(v).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€';
-
-// ── LOAD FROM GITHUB ──────────────────────────────────────────────────────────
 async function loadData() {
   const btn = $('reloadBtn');
   btn.classList.add('loading');
@@ -295,354 +237,262 @@ async function loadData() {
   $('loadingState').style.display = 'block';
   $('mainContent').style.display = 'none';
 
-  // Use raw.githubusercontent.com for public repos; jsDelivr as fallback
   const urls = [
     `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${EXCEL_FILE}`,
     `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${BRANCH}/${EXCEL_FILE}`
   ];
 
-  let arrayBuffer = null;
-  let lastError = '';
-
+  let buf = null, lastErr = '';
   for (const url of urls) {
     try {
       const res = await fetch(url);
-      if (!res.ok) { lastError = `HTTP ${res.status} desde ${url}`; continue; }
-      arrayBuffer = await res.arrayBuffer();
-      break;
-    } catch (e) {
-      lastError = e.message;
-    }
+      if (!res.ok) { lastErr = `HTTP ${res.status} en ${url}`; continue; }
+      buf = await res.arrayBuffer(); break;
+    } catch(e) { lastErr = e.message; }
   }
 
   btn.classList.remove('loading');
 
-  if (!arrayBuffer) {
+  if (!buf) {
     $('loadingState').style.display = 'none';
     $('errorState').style.display = 'block';
-    $('errorState').innerHTML = `
-      <strong>No se pudo cargar el archivo Excel.</strong><br><br>
-      ${lastError}<br><br>
-      Asegúrate de que el repositorio es público y que el archivo
-      <code>${EXCEL_FILE}</code> está en la rama <code>${BRANCH}</code>.<br><br>
-      <small>Si el repositorio es privado, necesitas hacer público el repo
-      o usar un token de acceso.</small>`;
+    $('errorState').innerHTML = `<strong>No se pudo cargar el Excel.</strong><br><br>${lastErr}<br><br>
+      Comprueba que el repositorio es <strong>público</strong> y que <code>${EXCEL_FILE}</code>
+      está en la rama <code>${BRANCH}</code>.`;
     return;
   }
-
-  try {
-    parseExcel(arrayBuffer);
-  } catch (e) {
+  try { parseExcel(buf); }
+  catch(e) {
     $('loadingState').style.display = 'none';
     $('errorState').style.display = 'block';
-    $('errorState').textContent = 'Error al parsear el Excel: ' + e.message;
+    $('errorState').textContent = 'Error al leer el Excel: ' + e.message;
   }
 }
 
 function parseExcel(buffer) {
-  // raw:true keeps numbers as numbers and dates as serial numbers
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: false });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
+  const wb   = XLSX.read(buffer, {type:'array', cellDates:false});
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true});
 
-  // Find header row (search first 10 rows)
   let hIdx = -1;
-  for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const r = rows[i].map(c => String(c || '').toUpperCase().trim());
-    if (r.some(c => c === 'FECHA') && r.some(c => c === 'IMPORTE')) { hIdx = i; break; }
+  for (let i = 0; i < Math.min(rows.length,10); i++) {
+    const r = rows[i].map(c => String(c||'').toUpperCase().trim());
+    if (r.some(c=>c==='FECHA') && r.some(c=>c==='IMPORTE')) { hIdx=i; break; }
   }
-  if (hIdx === -1) throw new Error('No se encontraron columnas FECHA e IMPORTE.');
+  if (hIdx===-1) throw new Error('No se encontraron columnas FECHA e IMPORTE.');
 
-  const headers = rows[hIdx].map(c => String(c || '').toUpperCase().trim());
-  const col = name => headers.findIndex(h => h.includes(name));
-
-  const iF   = col('FECHA');
-  const iC   = col('CONCEPTO');
-  const iI   = col('IMPORTE');
-  // SUBCATEGORIA must be found before CATEGORIA to avoid partial match conflict
+  const headers = rows[hIdx].map(c => String(c||'').toUpperCase().trim());
+  const iF   = headers.indexOf('FECHA');
+  const iC   = headers.indexOf('CONCEPTO');
+  const iI   = headers.indexOf('IMPORTE');
   const iSub = headers.findIndex(h => h.includes('SUBCATEGOR'));
   const iCat = headers.findIndex(h => h.includes('CATEGOR') && !h.includes('SUBCATEGOR'));
 
-  // Convert Excel serial date to YYYY-MM-DD string
-  function serialToDate(serial) {
-    if (typeof serial === 'string' && serial.includes('-')) return serial.slice(0,10);
-    if (typeof serial === 'number') {
-      // Excel epoch: Dec 30 1899
-      const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
-      const y = d.getUTCFullYear();
-      const m = String(d.getUTCMonth()+1).padStart(2,'0');
-      const day = String(d.getUTCDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
+  function toDate(v) {
+    if (typeof v === 'string') return v.slice(0,10);
+    if (typeof v === 'number') {
+      const d = new Date(Math.round((v-25569)*86400000));
+      return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
     }
-    return String(serial).slice(0,10);
+    return String(v).slice(0,10);
   }
 
   DATA = [];
-  for (let i = hIdx + 1; i < rows.length; i++) {
+  for (let i = hIdx+1; i < rows.length; i++) {
     const r = rows[i];
-    if (!r || r[iF] === undefined || r[iF] === null || String(r[iF]).trim() === '') continue;
-    const fecha = serialToDate(r[iF]);
-    // With raw:true numbers come as proper JS numbers — no string conversion needed
-    const importe = typeof r[iI] === 'number' ? r[iI] : parseFloat(String(r[iI]||'').replace(',','.'));
-    if (isNaN(importe)) continue;
+    if (!r || r[iF]==null || String(r[iF]).trim()==='') continue;
+    const imp = typeof r[iI]==='number' ? r[iI] : parseFloat(String(r[iI]||'').replace(',','.'));
+    if (isNaN(imp)) continue;
     DATA.push({
-      FECHA:        fecha,
-      CONCEPTO:     String(r[iC]  || '').trim(),
-      IMPORTE:      importe,
-      CATEGORIA:    String(r[iCat]|| 'Sin categoría').trim(),
-      SUBCATEGORIA: String(r[iSub]|| '').trim()
+      FECHA:        toDate(r[iF]),
+      CONCEPTO:     String(r[iC] ||'').trim(),
+      IMPORTE:      imp,
+      CATEGORIA:    String(r[iCat]||'Sin categoría').trim(),
+      SUBCATEGORIA: String(r[iSub]||'').trim()
     });
   }
-
-  if (DATA.length === 0) throw new Error('No se encontraron filas de datos válidas.');
+  if (DATA.length===0) throw new Error('No se encontraron filas válidas.');
 
   $('loadingState').style.display = 'none';
-  $('mainContent').style.display = 'block';
+  $('mainContent').style.display  = 'block';
   buildCatSelect();
   update();
 }
 
-// ── FILTERS ───────────────────────────────────────────────────────────────────
 function filtered() {
-  const yr  = $('filterPeriod').value;
-  const cat = $('filterCat').value;
-  return DATA.filter(d =>
-    (yr  === 'all' || d.FECHA.startsWith(yr)) &&
-    (cat === 'all' || d.CATEGORIA === cat)
-  );
+  const yr=($('filterPeriod').value), cat=($('filterCat').value);
+  return DATA.filter(d=>(yr==='all'||d.FECHA.startsWith(yr))&&(cat==='all'||d.CATEGORIA===cat));
 }
 
 function buildCatSelect() {
-  const s = $('filterCat');
-  s.innerHTML = '<option value="all">Todas</option>';
-  [...new Set(DATA.map(d => d.CATEGORIA))].sort().forEach(c => {
-    const o = document.createElement('option'); o.value = c; o.text = c; s.appendChild(o);
+  const s=$('filterCat'); s.innerHTML='<option value="all">Todas</option>';
+  [...new Set(DATA.map(d=>d.CATEGORIA))].sort().forEach(c=>{
+    const o=document.createElement('option'); o.value=c; o.text=c; s.appendChild(o);
   });
 }
 
 function buildSubcatSelect(data) {
-  const s = $('filterSubcat'), cur = s.value;
-  s.innerHTML = '<option value="all">Todas las subcategorías</option>';
-  [...new Set(data.map(d => d.SUBCATEGORIA).filter(Boolean))].sort().forEach(c => {
-    const o = document.createElement('option'); o.value = c; o.text = c;
-    if (c === cur) o.selected = true;
-    s.appendChild(o);
+  const s=$('filterSubcat'), cur=s.value;
+  s.innerHTML='<option value="all">Todas las subcategorías</option>';
+  [...new Set(data.map(d=>d.SUBCATEGORIA).filter(Boolean))].sort().forEach(c=>{
+    const o=document.createElement('option'); o.value=c; o.text=c;
+    if(c===cur) o.selected=true; s.appendChild(o);
   });
 }
 
-// ── METRICS ───────────────────────────────────────────────────────────────────
 function metrics(data) {
-  const AUX = AUX_CATS;
-  const SUBV_CAT = 'Subvención E.E. y Reenbolsos';
+  // Gasto bruto: negativos sin AUX ni SUBV
+  const bruto = data.filter(d=>!AUX_CATS.includes(d.CATEGORIA)&&d.CATEGORIA!==SUBV_CAT&&d.IMPORTE<0)
+                    .reduce((a,d)=>a+d.IMPORTE, 0);
+  // Subvenciones: suma neta de toda la categoría
+  const subv  = data.filter(d=>d.CATEGORIA===SUBV_CAT).reduce((a,d)=>a+d.IMPORTE, 0);
+  const neto  = bruto + subv;
 
-  // Gasto bruto obra: solo negativos, excluye AUX y Subvención
-  const gastoBruto = data
-    .filter(d => !AUX.includes(d.CATEGORIA) && d.CATEGORIA !== SUBV_CAT && d.IMPORTE < 0)
-    .reduce((a, d) => a + d.IMPORTE, 0);
-
-  // Subvenciones y reembolsos: toda la categoría (suma neta, incluye gastos de tramitación)
-  const subvData = data.filter(d => d.CATEGORIA === SUBV_CAT);
-  const totalSubv = subvData.reduce((a, d) => a + d.IMPORTE, 0);
-
-  // Gasto neto = bruto + subvenciones netas (subv es positivo así que resta del gasto)
-  const neto = gastoBruto + totalSubv;
-
-  $('mTotal').textContent = fmt(gastoBruto);
-  $('mSub').textContent   = (totalSubv >= 0 ? '+' : '') + fmt(totalSubv);
+  $('mTotal').textContent = fmt(bruto);
+  $('mSub').textContent   = (subv>=0?'+':'')+fmt(subv);
   $('mNet').textContent   = fmt(neto);
-  $('mCount').textContent = data.length;
 
-  $('mSubSub').textContent = subvData.length + ' movimiento' + (subvData.length !== 1 ? 's' : '');
-
-  const months = [...new Set(data.map(d => d.FECHA.slice(0, 7)))].length;
-  $('mMonths').textContent = months + ' meses';
-
-  const sorted = data.map(d => d.FECHA).filter(Boolean).sort();
-  if (sorted.length) {
-    $('headerSub').textContent = DATA.length + ' movimientos · ' + sorted[0].slice(0,7) + ' → ' + sorted[sorted.length-1].slice(0,7);
-  }
-
-  // Aux
-  const comb  = data.filter(d => d.CATEGORIA === 'Combustible').reduce((a,d) => a+d.IMPORTE, 0);
-  const comida= data.filter(d => d.CATEGORIA === 'Comida').reduce((a,d) => a+d.IMPORTE, 0);
-  $('auxCombustible').textContent = fmt(comb);
-  $('auxComida').textContent      = fmt(comida);
+  $('auxCombustible').textContent = fmt(data.filter(d=>d.CATEGORIA==='Combustible').reduce((a,d)=>a+d.IMPORTE,0));
+  $('auxComida').textContent      = fmt(data.filter(d=>d.CATEGORIA==='Comida').reduce((a,d)=>a+d.IMPORTE,0));
 }
 
-// ── BAR CHART ─────────────────────────────────────────────────────────────────
 function renderBarChart(data) {
-  // Sum everything per category, exclude AUX and Subvención from the chart
-  const byC = {};
-  data.filter(d => !AUX_CATS.includes(d.CATEGORIA) && d.CATEGORIA !== 'Subvención E.E. y Reenbolsos')
-    .forEach(d => { byC[d.CATEGORIA] = (byC[d.CATEGORIA]||0) + d.IMPORTE; });
+  const byC={};
+  data.filter(d=>!AUX_CATS.includes(d.CATEGORIA))
+      .forEach(d=>{ byC[d.CATEGORIA]=(byC[d.CATEGORIA]||0)+d.IMPORTE; });
 
-  const sorted = Object.entries(byC).sort((a,b) => a[1]-b[1]); // most negative first
-  const labels = sorted.map(x => x[0]);
-  const values = sorted.map(x => Math.round(Math.abs(x[1])));
-  const colors = labels.map(l => COLORS[l]||'#888');
+  // negatives sorted most-negative first, positives at end
+  const neg = Object.entries(byC).filter(x=>x[1]<0).sort((a,b)=>a[1]-b[1]);
+  const pos = Object.entries(byC).filter(x=>x[1]>=0).sort((a,b)=>b[1]-a[1]);
+  const sorted = [...neg,...pos];
 
-  const h = Math.max(200, labels.length * 36 + 50);
-  $('chartWrap').style.height = h + 'px';
+  const labels = sorted.map(x=>x[0]);
+  const values = sorted.map(x=>Math.round(Math.abs(x[1])));
+  const colors = sorted.map(x=>COLORS[x[0]]||'#888');
 
+  $('chartWrap').style.height = Math.max(200, labels.length*36+50)+'px';
   if (barChart) barChart.destroy();
   barChart = new Chart($('barChart'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{ data: values, backgroundColor: colors, borderRadius: 4, borderSkipped: false }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ' ' + ctx.raw.toLocaleString('es-ES') + '€' } }
-      },
-      scales: {
-        x: {
-          ticks: { font:{size:11}, callback: v => (v/1000).toFixed(0)+'k€' },
-          grid: { color: 'rgba(128,128,128,0.1)' }
-        },
-        y: { ticks: { font:{size:12} }, grid: { display: false } }
+    type:'bar',
+    data:{ labels, datasets:[{data:values, backgroundColor:colors, borderRadius:4, borderSkipped:false}] },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.raw.toLocaleString('es-ES')+'€'}} },
+      scales:{
+        x:{ ticks:{font:{size:11}, callback:v=>(v/1000).toFixed(0)+'k€'}, grid:{color:'rgba(128,128,128,0.1)'} },
+        y:{ ticks:{font:{size:12}}, grid:{display:false} }
       }
     }
   });
 }
 
-// ── BREAKDOWN TABLE ───────────────────────────────────────────────────────────
 function renderTable(data) {
-  // Sum everything (+ and -) per category/subcategory — no filtering
-  const byC = {};
-  data.filter(d => !AUX_CATS.includes(d.CATEGORIA)).forEach(d => {
-    if (!byC[d.CATEGORIA]) byC[d.CATEGORIA] = { t:0, n:0, subs:{} };
+  const byC={};
+  data.filter(d=>!AUX_CATS.includes(d.CATEGORIA)).forEach(d=>{
+    if(!byC[d.CATEGORIA]) byC[d.CATEGORIA]={t:0,subs:{}};
     byC[d.CATEGORIA].t += d.IMPORTE;
-    byC[d.CATEGORIA].n++;
-    const s = d.SUBCATEGORIA || 'Sin subcategoría';
-    if (!byC[d.CATEGORIA].subs[s]) byC[d.CATEGORIA].subs[s] = { t:0, n:0 };
+    const s=d.SUBCATEGORIA||'Sin subcategoría';
+    if(!byC[d.CATEGORIA].subs[s]) byC[d.CATEGORIA].subs[s]={t:0};
     byC[d.CATEGORIA].subs[s].t += d.IMPORTE;
-    byC[d.CATEGORIA].subs[s].n++;
   });
 
-  // Sort by absolute value descending (biggest categories first)
-  const sorted = Object.entries(byC).sort((a,b) => Math.abs(b[1].t) - Math.abs(a[1].t));
-  const maxAbs = sorted.length ? Math.max(...sorted.map(x => Math.abs(x[1].t))) : 1;
-  const tb = $('tableCat'); tb.innerHTML = '';
+  // negatives by absolute value desc, positives at end
+  const neg = Object.entries(byC).filter(x=>x[1].t<0).sort((a,b)=>a[1].t-b[1].t);
+  const pos = Object.entries(byC).filter(x=>x[1].t>=0).sort((a,b)=>b[1].t-a[1].t);
+  const sorted = [...neg,...pos];
+  const maxAbs = sorted.length ? Math.max(...sorted.map(x=>Math.abs(x[1].t))) : 1;
 
-  sorted.forEach(([cat, info]) => {
-    const pct = (Math.abs(info.t)/maxAbs*100).toFixed(0);
-    const col = COLORS[cat]||'#888';
-    const subsSorted = Object.entries(info.subs).sort((a,b) => a[1].t - b[1].t);
-    const subNames = subsSorted.map(s => s[0]).join(', ');
-    const isNeg = info.t < 0;
+  const tb=$('tableCat'); tb.innerHTML='';
+  sorted.forEach(([cat,info])=>{
+    const pct    = (Math.abs(info.t)/maxAbs*100).toFixed(0);
+    const col    = COLORS[cat]||'#888';
+    const subs   = Object.entries(info.subs).sort((a,b)=>a[1].t-b[1].t);
+    const isPos  = info.t>=0;
+    const key    = btoa(unescape(encodeURIComponent(cat))).replace(/[=+/]/g,'');
 
-    const tr = document.createElement('tr');
-    tr.className = 'cat-row';
-    tr.dataset.cat = cat;
-    tr.innerHTML = `
+    const tr=document.createElement('tr'); tr.className='cat-row'; tr.dataset.cat=cat;
+    tr.innerHTML=`
       <td style="white-space:nowrap">
-        <i class="expand-icon" id="ei_${btoa(cat).replace(/=/g,'')}">▶</i>
+        <i class="expand-icon" id="ei_${key}">▶</i>
         <span class="cat-dot" style="background:${col}"></span>${cat}
       </td>
-      <td class="col-subs" title="${subNames}">${subNames}</td>
-      <td class="col-movs">${info.n}</td>
-      <td>
-        <div class="bar-wrap">
-          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
-          <span class="amt" style="color:${isNeg?'var(--text)':'var(--green)'}">${isNeg?'':'+'}${fmt(info.t)}</span>
-        </div>
-      </td>`;
+      <td class="col-subs" title="${subs.map(s=>s[0]).join(', ')}">${subs.map(s=>s[0]).join(', ')}</td>
+      <td><div class="bar-wrap">
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div>
+        <span class="amt" style="color:${isPos?'var(--green)':'var(--text)'}">${isPos?'+':''}${fmt(info.t)}</span>
+      </div></td>`;
     tb.appendChild(tr);
 
-    subsSorted.forEach(([sub, sinfo], idx) => {
-      const str = document.createElement('tr');
-      str.className = 'sub-row' + (idx === subsSorted.length-1 ? ' last-sub' : '');
-      str.dataset.parent = cat;
-      str.style.display = 'none';
-      const subPct = (Math.abs(sinfo.t)/maxAbs*100).toFixed(0);
-      const sNeg = sinfo.t < 0;
-      str.innerHTML = `
+    subs.forEach(([sub,sinfo],idx)=>{
+      const str=document.createElement('tr');
+      str.className='sub-row'+(idx===subs.length-1?' last-sub':'');
+      str.dataset.parent=cat; str.style.display='none';
+      const sp=(Math.abs(sinfo.t)/maxAbs*100).toFixed(0);
+      const sp2=sinfo.t>=0;
+      str.innerHTML=`
         <td>${sub}</td>
-        <td class="col-subs" style="color:var(--text3)">${sinfo.n} mov.</td>
-        <td class="col-movs" style="color:var(--text3)"></td>
-        <td>
-          <div class="bar-wrap">
-            <div class="bar-bg"><div class="bar-fill" style="width:${subPct}%;background:${col}88"></div></div>
-            <span class="amt" style="color:${sNeg?'var(--text2)':'var(--green)'}">${sNeg?'':'+'}${fmt(sinfo.t)}</span>
-          </div>
-        </td>`;
+        <td class="col-subs"></td>
+        <td><div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill" style="width:${sp}%;background:${col}88"></div></div>
+          <span class="amt" style="color:${sp2?'var(--green)':'var(--text2)'}">${sp2?'+':''}${fmt(sinfo.t)}</span>
+        </div></td>`;
       tb.appendChild(str);
     });
 
-    tr.addEventListener('click', () => {
-      const key = btoa(cat).replace(/=/g,'');
-      const icon = $('ei_' + key);
-      const isOpen = icon.classList.contains('open');
-      icon.classList.toggle('open', !isOpen);
-      tb.querySelectorAll(`[data-parent="${cat}"]`).forEach(r => {
-        r.style.display = isOpen ? 'none' : '';
-      });
+    tr.addEventListener('click',()=>{
+      const icon=$('ei_'+key);
+      const open=icon.classList.contains('open');
+      icon.classList.toggle('open',!open);
+      tb.querySelectorAll(`[data-parent="${CSS.escape(cat)}"]`).forEach(r=>{ r.style.display=open?'none':''; });
     });
   });
 }
 
-// ── TRANSACTIONS ──────────────────────────────────────────────────────────────
 function toggleTx() {
-  const inner = $('txInner');
-  const icon  = $('txIcon');
-  const isOpen = inner.classList.contains('open');
-  inner.classList.toggle('open', !isOpen);
-  icon.classList.toggle('open', !isOpen);
-  // Round corners on toggle header
-  $('txToggle').style.borderRadius = isOpen
-    ? 'var(--radius-lg)'
-    : 'var(--radius-lg) var(--radius-lg) 0 0';
+  const inner=$('txInner'), icon=$('txIcon');
+  const open=inner.classList.contains('open');
+  inner.classList.toggle('open',!open);
+  icon.classList.toggle('open',!open);
+  $('txToggle').style.borderRadius=open?'var(--radius-lg)':'var(--radius-lg) var(--radius-lg) 0 0';
 }
 
-function renderTx(data, reset) {
-  if (reset) txPage = 0;
-  const sub = $('filterSubcat').value;
-  const src = (sub === 'all' ? data : data.filter(d => d.SUBCATEGORIA === sub))
-    .slice().sort((a,b) => b.FECHA.localeCompare(a.FECHA));
-  const slice = src.slice(0, (txPage+1)*PG);
-  const tb = $('txBody'); tb.innerHTML = '';
-
-  slice.forEach(d => {
-    const col = COLORS[d.CATEGORIA]||'#888';
-    const neg = d.IMPORTE < 0;
-    const dd  = d.FECHA;
-    const dateStr = dd.length >= 10
-      ? dd.slice(8)+'.'+dd.slice(5,7)+'.'+dd.slice(0,4)
-      : dd;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-size:11px;color:var(--text3);white-space:nowrap">${dateStr}</td>
+function renderTx(data,reset) {
+  if(reset) txPage=0;
+  const sub=$('filterSubcat').value;
+  const src=(sub==='all'?data:data.filter(d=>d.SUBCATEGORIA===sub))
+    .slice().sort((a,b)=>b.FECHA.localeCompare(a.FECHA));
+  const slice=src.slice(0,(txPage+1)*PG);
+  const tb=$('txBody'); tb.innerHTML='';
+  slice.forEach(d=>{
+    const col=COLORS[d.CATEGORIA]||'#888';
+    const neg=d.IMPORTE<0;
+    const dd=d.FECHA;
+    const ds=dd.length>=10?dd.slice(8)+'.'+dd.slice(5,7)+'.'+dd.slice(0,4):dd;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-size:11px;color:var(--text3);white-space:nowrap">${ds}</td>
       <td class="tx-concept" title="${d.CONCEPTO}">${d.CONCEPTO}</td>
       <td><span class="badge" style="background:${col}22;color:${col}">${d.SUBCATEGORIA||d.CATEGORIA}</span></td>
       <td class="${neg?'tx-neg':'tx-pos'}">${fmtFull(d.IMPORTE)}</td>`;
     tb.appendChild(tr);
   });
-
-  $('btnMore').style.display = slice.length < src.length ? 'inline-block' : 'none';
+  $('btnMore').style.display=slice.length<src.length?'inline-block':'none';
 }
 
-// ── UPDATE ────────────────────────────────────────────────────────────────────
 function update() {
-  const data = filtered();
+  const data=filtered();
   buildSubcatSelect(data);
   metrics(data);
   renderBarChart(data);
   renderTable(data);
-  renderTx(data, true);
+  renderTx(data,true);
 }
 
-// ── EVENTS ────────────────────────────────────────────────────────────────────
-$('filterPeriod').addEventListener('change', update);
-$('filterCat').addEventListener('change', update);
-$('filterSubcat').addEventListener('change', () => renderTx(filtered(), true));
-$('btnMore').addEventListener('click', () => { txPage++; renderTx(filtered(), false); });
+$('filterPeriod').addEventListener('change',update);
+$('filterCat').addEventListener('change',update);
+$('filterSubcat').addEventListener('change',()=>renderTx(filtered(),true));
+$('btnMore').addEventListener('click',()=>{ txPage++; renderTx(filtered(),false); });
 
-// Auto-load on start
 loadData();
 </script>
 </body>
