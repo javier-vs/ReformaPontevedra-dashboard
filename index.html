@@ -17,19 +17,18 @@
   --bg:#f7f5f0;--surface:#ffffff;--surface2:#f0ede6;
   --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
   --text:#1c1a17;--text2:#6b6358;--text3:#a09880;
-  --green:#1a7a4a;--radius:12px;--radius-lg:18px;--radius-xl:24px;
+  --green:#3D7A4A;--radius:12px;--radius-lg:18px;--radius-xl:24px;
   --shadow:0 2px 12px rgba(0,0,0,0.07);
 }
 @media(prefers-color-scheme:dark){:root{
   --bg:#151310;--surface:#1e1b17;--surface2:#252118;
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
   --text:#f0ece4;--text2:#b0a898;--text3:#706858;
-  --green:#2ecc71;
+  --green:#5aaa7a;
   --shadow:0 2px 12px rgba(0,0,0,0.3);
 }}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 
-/* HERO */
 .hero{position:relative;width:100%;height:280px;overflow:hidden;border-radius:0 0 var(--radius-xl) var(--radius-xl)}
 .hero-img{width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,8,5,0.1) 0%,rgba(10,8,5,0.55) 55%,rgba(10,8,5,0.82) 100%)}
@@ -37,27 +36,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sy
 .hero-amount{font-size:clamp(48px,12vw,72px);font-weight:700;color:#fff;letter-spacing:-0.04em;line-height:1;text-shadow:0 2px 20px rgba(0,0,0,0.3)}
 .hero-label{font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.12em;margin-top:6px}
 .hero-subv{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 12px;margin-top:10px;font-size:12px;color:rgba(255,255,255,0.9);font-weight:500}
-.hero-subv-dot{width:6px;height:6px;border-radius:50%;background:#2ecc71;flex-shrink:0}
+.hero-subv-dot{width:6px;height:6px;border-radius:50%;background:#5aaa7a;flex-shrink:0}
 
-/* CONTENT */
 .content{padding:1.25rem 1rem 3rem;max-width:760px;margin:0 auto}
 .section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin:1.5rem 0 0.75rem}
 
-/* PIE CHART */
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow);margin-bottom:0.5rem}
-.chart-wrap{position:relative;width:100%;max-width:300px;margin:0 auto}
+/* CHART */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow)}
+.chart-inner{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;justify-content:center}
+.chart-canvas-wrap{position:relative;width:200px;height:200px;flex-shrink:0}
+.chart-legend{display:flex;flex-direction:column;gap:8px;min-width:160px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend-pct{font-size:11px;color:var(--text3);white-space:nowrap}
 
-/* BREAKDOWN */
+/* BREAKDOWN — sin barras */
 .breakdown{display:flex;flex-direction:column;gap:8px}
 .cat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
 .cat-card-header{display:flex;align-items:center;gap:12px;padding:0.875rem 1rem;cursor:pointer;transition:background 0.15s;user-select:none}
 .cat-card-header:hover{background:var(--surface2)}
 .cat-icon{width:40px;height:40px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
-.cat-info{flex:1;min-width:0}
-.cat-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
-.cat-bar-bg{height:3px;background:var(--surface2);border-radius:2px}
-.cat-bar-fill{height:3px;border-radius:2px;transition:width 0.5s ease}
-.cat-amt{font-size:15px;font-weight:700;letter-spacing:-0.02em;white-space:nowrap}
+.cat-name{flex:1;font-size:14px;font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-amt{font-size:15px;font-weight:700;letter-spacing:-0.02em;white-space:nowrap;flex-shrink:0}
 .cat-amt.pos{color:var(--green)}
 .cat-chevron{font-size:10px;color:var(--text3);transition:transform 0.2s;margin-left:6px;flex-shrink:0}
 .cat-chevron.open{transform:rotate(90deg)}
@@ -66,10 +67,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sy
 .sub-item{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem 0.6rem 1.25rem;border-bottom:1px solid var(--border);gap:8px}
 .sub-item:last-child{border-bottom:none}
 .sub-name{font-size:12px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.sub-bar-bg{width:44px;height:3px;background:var(--surface2);border-radius:2px}
-.sub-bar-fill{height:3px;border-radius:2px}
-.sub-amt{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;min-width:60px;text-align:right}
+.sub-amt{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;text-align:right}
 .sub-amt.pos{color:var(--green)}
 
 /* AUX */
@@ -79,13 +77,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sy
 .aux-value{font-size:20px;font-weight:700;letter-spacing:-0.02em}
 .aux-note{font-size:10px;color:var(--text3);margin-top:3px}
 
+/* RELOAD BTN al final */
+.reload-wrap{text-align:center;margin-top:2rem}
+.reload-btn{display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 20px;font-size:13px;cursor:pointer;transition:background 0.15s}
+.reload-btn:hover{background:var(--surface2);color:var(--text2)}
+.reload-btn svg{width:14px;height:14px;flex-shrink:0}
+.reload-btn.loading svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .error-state{padding:2rem 1rem;color:#c0392b;font-size:14px;line-height:1.6;text-align:center}
 .loading-state{padding:4rem 1rem;color:var(--text3);font-size:14px;text-align:center}
 
 @media(min-width:600px){
   .hero{height:340px}
   .hero-amount{font-size:80px}
-  .chart-wrap{max-width:360px}
+  .chart-canvas-wrap{width:240px;height:240px}
 }
 </style>
 </head>
@@ -111,8 +117,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sy
 
     <div class="section-title">Distribución del gasto</div>
     <div class="chart-card">
-      <div class="chart-wrap" id="chartWrap">
-        <canvas id="pieChart"></canvas>
+      <div class="chart-inner">
+        <div class="chart-canvas-wrap">
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="chart-legend" id="chartLegend"></div>
       </div>
     </div>
 
@@ -131,6 +140,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sy
         <div class="aux-value" id="auxComida">—</div>
         <div class="aux-note">No computa en el total</div>
       </div>
+    </div>
+
+    <div class="reload-wrap">
+      <button class="reload-btn" id="reloadBtn" onclick="loadData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Actualizar datos
+      </button>
     </div>
 
   </div>
@@ -160,28 +178,18 @@ const CAT_EMOJIS={
   'Subvenciones y Reembolsos':'💶',
 };
 
-// Colores vivos, no pastel
-const CAT_COLORS={
-  'Carpintería y Cocina':   '#E67E22',
-  'Fontanería y Calefacción':'#1ABC9C',
-  'Suelos y Revestimientos': '#E74C3C',
-  'Tabiques y Aislamientos': '#9B59B6',
-  'Electricidad y Domótica': '#F1C40F',
-  'Ferretería y Consumibles':'#7F8C8D',
-  'Baños':                   '#3498DB',
-  'Ventanas':                '#2980B9',
-  'Profesionales y Tasas':   '#2C3E50',
-  'Demolición':              '#95A5A6',
-  'Pintura y Acabado':       '#D35400',
-  'Ventilación':             '#16A085',
-  'Subvenciones y Reembolsos':'#27AE60',
-};
+// 5 colores armoniosos + gris para resto
+const TOP5_COLORS=['#2E86AB','#C1440E','#3D7A4A','#7B3F7A','#C98B00'];
+const REST_COLOR='#9E9E9E';
 
 let DATA=[], pieChart=null;
 const $=id=>document.getElementById(id);
 const fmt=v=>Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:0,maximumFractionDigits:0})+'€';
+const fmtFull=v=>(v<0?'-':'+')+Math.abs(v).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+'€';
 
 async function loadData(){
+  const btn=$('reloadBtn');
+  if(btn) btn.classList.add('loading');
   const urls=[
     `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${EXCEL_FILE}`,
     `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${BRANCH}/${EXCEL_FILE}`
@@ -191,6 +199,7 @@ async function loadData(){
     try{const r=await fetch(url);if(!r.ok){lastErr=`HTTP ${r.status}`;continue;}buf=await r.arrayBuffer();break;}
     catch(e){lastErr=e.message;}
   }
+  if(btn) btn.classList.remove('loading');
   if(!buf){
     $('loadingState').style.display='none';
     $('errorState').style.display='block';
@@ -258,15 +267,37 @@ function render(){
 }
 
 function renderPie(byC){
-  const entries=Object.entries(byC)
+  // Sort by absolute value, take top 5, group rest
+  const sorted=Object.entries(byC)
     .filter(([cat])=>cat!==SUBV_CAT)
-    .sort((a,b)=>a[1].t-b[1].t);
-  const labels=entries.map(x=>x[0]);
-  const values=entries.map(x=>Math.round(Math.abs(x[1].t)));
-  const colors=labels.map(l=>CAT_COLORS[l]||'#7F8C8D');
+    .sort((a,b)=>Math.abs(b[1].t)-Math.abs(a[1].t));
 
-  const sz=Math.min(window.innerWidth-80,300);
-  $('chartWrap').style.height=sz+'px';
+  const top5=sorted.slice(0,5);
+  const rest=sorted.slice(5);
+  const restTotal=rest.reduce((a,x)=>a+Math.abs(x[1].t),0);
+
+  const labels=top5.map(x=>x[0]);
+  const values=top5.map(x=>Math.round(Math.abs(x[1].t)));
+  const colors=[...TOP5_COLORS];
+
+  if(restTotal>0){
+    labels.push('Resto de categorías');
+    values.push(Math.round(restTotal));
+    colors.push(REST_COLOR);
+  }
+
+  const grandTotal=values.reduce((a,b)=>a+b,0);
+
+  // Legend HTML
+  const legendEl=$('chartLegend');
+  legendEl.innerHTML=labels.map((l,i)=>{
+    const pct=((values[i]/grandTotal)*100).toFixed(1);
+    return `<div class="legend-item">
+      <div class="legend-dot" style="background:${colors[i]}"></div>
+      <span class="legend-name">${l}</span>
+      <span class="legend-pct">${pct}%</span>
+    </div>`;
+  }).join('');
 
   if(pieChart)pieChart.destroy();
   pieChart=new Chart($('pieChart'),{
@@ -276,9 +307,8 @@ function renderPie(byC){
       datasets:[{
         data:values,
         backgroundColor:colors,
-        borderWidth:2,
-        borderColor:'var(--surface)',
-        hoverOffset:8
+        borderWidth:0,   // sin contorno
+        hoverOffset:10
       }]
     },
     options:{
@@ -291,7 +321,7 @@ function renderPie(byC){
             label:ctx=>{
               const total=ctx.dataset.data.reduce((a,b)=>a+b,0);
               const pct=((ctx.raw/total)*100).toFixed(1);
-              return ' '+ctx.label+': '+ctx.raw.toLocaleString('es-ES')+'€ ('+pct+'%)';
+              return ' '+ctx.raw.toLocaleString('es-ES')+'€ ('+pct+'%)';
             },
             labelColor:ctx=>({backgroundColor:colors[ctx.dataIndex],borderColor:'transparent',borderRadius:3})
           }
@@ -302,17 +332,15 @@ function renderPie(byC){
 }
 
 function renderBreakdown(byC){
+  // Negatives sorted by abs desc, positives at end
   const neg=Object.entries(byC).filter(x=>x[1].t<0).sort((a,b)=>a[1].t-b[1].t);
   const pos=Object.entries(byC).filter(x=>x[1].t>=0).sort((a,b)=>b[1].t-a[1].t);
   const sorted=[...neg,...pos];
-  const maxAbs=sorted.length?Math.max(...sorted.map(x=>Math.abs(x[1].t))):1;
   const el=$('breakdown');el.innerHTML='';
 
   sorted.forEach(([cat,info])=>{
     const emoji=CAT_EMOJIS[cat]||'📦';
-    const col=CAT_COLORS[cat]||'#7F8C8D';
     const isPos=info.t>=0;
-    const pct=(Math.abs(info.t)/maxAbs*100).toFixed(1);
     const subs=Object.entries(info.subs).sort((a,b)=>a[1].t-b[1].t);
     const key='k'+Math.random().toString(36).slice(2,8);
 
@@ -320,23 +348,16 @@ function renderBreakdown(byC){
     card.innerHTML=`
       <div class="cat-card-header" onclick="toggleCat('${key}')">
         <div class="cat-icon">${emoji}</div>
-        <div class="cat-info">
-          <div class="cat-name">${cat}</div>
-          <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-        </div>
+        <span class="cat-name">${cat}</span>
         <span class="cat-amt${isPos?' pos':''}">${isPos?'+':''}${fmt(info.t)}</span>
         <span class="cat-chevron" id="chev_${key}">▶</span>
       </div>
       <div class="cat-subs-list" id="subs_${key}">
         ${subs.map(([sub,sinfo])=>{
-          const sp=(Math.abs(sinfo.t)/maxAbs*100).toFixed(1);
           const sPos=sinfo.t>=0;
           return `<div class="sub-item">
             <span class="sub-name">${sub}</span>
-            <div class="sub-right">
-              <div class="sub-bar-bg"><div class="sub-bar-fill" style="width:${sp}%;background:${col}88"></div></div>
-              <span class="sub-amt${sPos?' pos':''}">${sPos?'+':''}${fmt(sinfo.t)}</span>
-            </div>
+            <span class="sub-amt${sPos?' pos':''}">${sPos?'+':''}${fmt(sinfo.t)}</span>
           </div>`;
         }).join('')}
       </div>`;
